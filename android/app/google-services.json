@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "667239302744",
+    "project_id": "user-database-5a0c0",
+    "storage_bucket": "user-database-5a0c0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:667239302744:android:22ca7a0dbf8d7fde50ac2d",
+        "android_client_info": {
+          "package_name": "com.android.application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANmr5gLRJNZhwzP7q5Qh_tbnE2ueN34mE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:667239302744:android:7907d420f46f2e3650ac2d",
+        "android_client_info": {
+          "package_name": "my.edu.tarc.com.example.p8userprofile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANmr5gLRJNZhwzP7q5Qh_tbnE2ueN34mE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

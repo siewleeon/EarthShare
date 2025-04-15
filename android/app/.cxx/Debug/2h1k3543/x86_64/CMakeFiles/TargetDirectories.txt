@@ -1,0 +1,2 @@
+C:/Users/MyMSI/Desktop/StudioProjects/p8UserProfile/android/app/.cxx/Debug/2h1k3543/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/MyMSI/Desktop/StudioProjects/p8UserProfile/android/app/.cxx/Debug/2h1k3543/x86_64/CMakeFiles/rebuild_cache.dir
