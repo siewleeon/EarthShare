@@ -1,6 +1,6 @@
 {
-    "name": "p8userprofile",
-    "short_name": "p8userprofile",
+    "name": "EarthShareApp",
+    "short_name": "EarthShareApp",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
