@@ -1,38 +1,70 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:EarthShareApp/phoneLogin.dart';
-import 'package:EarthShareApp/profile.dart';
-import 'package:EarthShareApp/register.dart';
-import 'package:EarthShareApp/emailLogin.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+import 'providers/point_provider.dart'; 
+import 'pages/home_page.dart';
+import 'profile.dart';  
+import 'register.dart';  
+import 'emailLogin.dart'; 
+import 'phoneLogin.dart';  
+import 'pages/history_page.dart';
+import 'providers/cart_provider.dart';
+import 'providers/product_provider.dart';
+import 'providers/transaction_provider.dart';
 
-
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await Firebase.initializeApp();
-
-  runApp(const MyApp());
+  runApp(const MainApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+
+
+
+class MainApp extends StatelessWidget {
+  const MainApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Profile App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (ctx) => CartProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => ProductProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => TransactionProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => PointProvider(),
+        ),
+      ],
+      child: MaterialApp(
+        navigatorKey: navigatorKey,
+        title: 'EarthShare',
+        initialRoute: '/register', 
+        routes: {  
+          '/home': (context) => const HomePage(),
+          '/history': (context) => const HistoryPage(),
+          '/profile': (context) => const ProfilePage(),
+          '/register': (context) => const RegisterPage(),
+          '/emailLogin': (context) => const EmailLoginPage(),
+          '/phoneLogin': (context) => const PhoneLoginPage(),
+        },
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+          useMaterial3: true,
+          scaffoldBackgroundColor: Colors.white,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.white,
+            elevation: 0,
+          ),
+        ),
       ),
-      initialRoute: '/register',
-      routes: {
-        '/profile': (context) => const ProfilePage(),
-        '/register': (context) => const RegisterPage(),
-        '/emailLogin': (context) => const EmailLoginPage(),
-        '/phoneLogin': (context) => const PhoneLoginPage(),
-      },
-      debugShowCheckedModeBanner: false,
     );
   }
 }

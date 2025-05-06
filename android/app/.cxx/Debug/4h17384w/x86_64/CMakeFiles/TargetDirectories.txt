@@ -1,0 +1,2 @@
+D:/New folder/New folder/EarthShare/android/app/.cxx/Debug/4h17384w/x86_64/CMakeFiles/edit_cache.dir
+D:/New folder/New folder/EarthShare/android/app/.cxx/Debug/4h17384w/x86_64/CMakeFiles/rebuild_cache.dir

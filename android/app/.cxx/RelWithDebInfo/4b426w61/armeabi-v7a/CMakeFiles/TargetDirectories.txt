@@ -1,0 +1,2 @@
+D:/New folder/New folder/EarthShare/android/app/.cxx/RelWithDebInfo/4b426w61/armeabi-v7a/CMakeFiles/edit_cache.dir
+D:/New folder/New folder/EarthShare/android/app/.cxx/RelWithDebInfo/4b426w61/armeabi-v7a/CMakeFiles/rebuild_cache.dir
