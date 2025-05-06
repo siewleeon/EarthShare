@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'emailForgotPassword.dart';
 
 class EmailLoginPage extends StatefulWidget {
   const EmailLoginPage({super.key});
@@ -32,11 +33,12 @@ class _LoginPageState extends State<EmailLoginPage> {
         const SnackBar(content: Text('Login successful!')),
       );
 
-      // 导航到主页面
+
       Navigator.pushReplacementNamed(context, '/profile'); // or your home route
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed: ${e.message}')),
+        SnackBar(content: Text('Login failed: ${e.message} (code: ${e.code})')),
+
       );
     } finally {
       setState(() {
@@ -59,7 +61,7 @@ class _LoginPageState extends State<EmailLoginPage> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/emailLogin_background.png', // 你的背景图
+              'assets/images/emailLogin_background.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -70,14 +72,7 @@ class _LoginPageState extends State<EmailLoginPage> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    const Text(
-                      "Login",
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
+
                     const SizedBox(height: 24),
                     TextFormField(
                       controller: emailController,
@@ -119,8 +114,10 @@ class _LoginPageState extends State<EmailLoginPage> {
                         ),
                         TextButton(
                           onPressed: () {
-                            // TODO: implement forgot password logic
-                          },
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
+                            );                          },
                           child: const Text(
                             "Forgot password?",
                             style: TextStyle(

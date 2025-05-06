@@ -131,7 +131,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Colors.black,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -162,7 +162,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Text.rich(
                               TextSpan(
                                 text: 'By continuing, you agree to our ',
-                                style: const TextStyle(color: Colors.white),
+                                style: const TextStyle(color: Colors.black),
                                 children: [
                                   TextSpan(
                                     text: 'EarthShare’s Terms of Use',
@@ -234,8 +234,12 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: const Text('Register'),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                          backgroundColor: Colors.lightGreenAccent,
+
                           shape: RoundedRectangleBorder(
+
                             borderRadius: BorderRadius.circular(12),
+
                           ),
                         ),
                       ),
@@ -243,12 +247,12 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(height: 16),
                       TextButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, '/login');
+                          Navigator.pushNamed(context, '/emailLogin');
                         },
                         child: const Text(
                           'Already have an account? Login',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Colors.blue,
                             decoration: TextDecoration.underline,
                           ),
                         ),
@@ -267,23 +271,30 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _buildTextField(String label,{bool isObscure = false,required TextEditingController controllerName} ){
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: TextFormField(
-        obscureText: isObscure,
-        decoration: InputDecoration(
-          labelText: label,
-          filled: true,
-          fillColor: Colors.white.withOpacity(0.8),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+          const SizedBox(height: 4),
+          TextFormField(
+            obscureText: isObscure,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.blue[50],
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            controller: controllerName,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter $label';
+              }
+              return null;
+            },
           ),
-        ),
-        controller: controllerName,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter $label';
-          }
-          return null;
-        },
+        ],
       ),
     );
   }

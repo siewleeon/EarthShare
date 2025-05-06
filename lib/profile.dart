@@ -79,55 +79,41 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           // Foreground content
           SingleChildScrollView(
+
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start, // Aligns the column content to the left
               children: [
                 buildTopSection(),
 
-                const SizedBox(height: 20),
+                buildCardSection("My Points", [
+                  buildFeatureButton(label: "Voucher", icon: Icons.card_giftcard),
+                  buildFeatureButton(label: "Earning Points", icon: Icons.monetization_on, iconBgColor: Colors.purpleAccent),
+                ]),
 
-                // My Points section
-                buildSection(
-                  context,
-                  title: 'My Points',
-                  items: [
-                    buildIconButton(context, 'Voucher', Icons.confirmation_number, '/vouchers', Colors.lightGreen),
-                    buildIconButton(context, 'Earning Points', Icons.stars, '/earningPoints', Colors.deepPurpleAccent),
-                  ],
-                ),
+                buildCardSection("My Store", [
+                  buildFeatureButton(label: "My Post", icon: Icons.post_add),
+                  buildFeatureButton(label: "History", icon: Icons.lock_clock, iconBgColor: Colors.grey),
+                ]),
 
-                // My Store section
-                buildSection(
-                  context,
-                  title: 'My Store',
-                  items: [
-                    buildIconButton(context, 'My Post', Icons.post_add, '/myPosts', Colors.lightGreen),
-                    buildIconButton(context, 'History', Icons.lock_clock, '/history', Colors.grey.shade300),
-                  ],
-                ),
+                buildCardSection("Support", [
+                  buildFeatureButton(label: "Contact Us", icon: Icons.contact_support, iconBgColor: Colors.green),
+                ]),
 
-                // Support section
-                buildSection(
-                  context,
-                  title: 'Support',
-                  items: [
-                    buildIconButton(context, 'Contact Us', Icons.support_agent, '/contactUs', Colors.lightGreen),
-                  ],
-                ),
-
-                const SizedBox(height: 40), // space for bottom navigation
+                SizedBox(height: 80), // for bottom nav bar space
               ],
             ),
           ),
+
         ],
       ),
-      // Optional: bottom navigation bar
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 4,
+        backgroundColor: Colors.grey,
         onTap: (index) {
           // handle navigation
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.home),label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: 'Post'),
           BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
@@ -139,43 +125,52 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget buildTopSection() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 80, 16, 24), // 调整顶部间距适配背景图
+      padding: const EdgeInsets.fromLTRB(20, 60, 20, 15),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Left: Avatar
+          // Bigger Avatar
           CircleAvatar(
-            radius: 36,
+            radius: 48,
             backgroundImage: NetworkImage(avatarUrl),
           ),
-          const SizedBox(width: 16),
-          // Right: User Info
+          const SizedBox(width: 15),
+          // User Info Column
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Name + Edit Button Row
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Text(
                         username,
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
                     ),
-                    IconButton(
-                      onPressed: _navigateToEditPage,
-                      icon: Icon(Icons.edit, size: 20, color: Colors.black54),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 100, 0), // 控制 edit button 靠右上角一点点
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: BoxConstraints(),
+                        icon: Icon(Icons.edit, size: 18, color: Colors.black54),
+                        onPressed: _navigateToEditPage,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+
+                // Tighter layout between elements
+                const SizedBox(height: 2),
                 Text(
                   userId,
-                  style: TextStyle(fontSize: 14, color: Colors.blue),
+                  style: TextStyle(fontSize: 10, color: Colors.blue),
                 ),
                 const SizedBox(height: 4),
                 Container(
@@ -186,18 +181,23 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   child: Text(
                     'Non-Member',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    style: TextStyle(color: Colors.white, fontSize: 10),
                   ),
                 ),
+                const SizedBox(height: 4),
                 TextButton(
                   onPressed: () {
                     // go to upgrade page
                   },
-                  style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size(0, 0),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                   child: Text(
                     'Upgrade to become member?',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 10,
                       color: Colors.blueAccent,
                       decoration: TextDecoration.underline,
                     ),
@@ -211,32 +211,41 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget buildSection(BuildContext context,
-      {required String title, required List<Widget> items}) {
+  Widget buildCardSection(String title, List<Widget> children) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          SizedBox(height: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black12,
-                  blurRadius: 6,
-                  offset: Offset(0, 2),
-                )
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
               ],
             ),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: items,
+            padding: const EdgeInsets.all(16),
+            child: GridView.count(
+              shrinkWrap: true,
+              crossAxisCount: 2,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: 1.6,
+              physics: NeverScrollableScrollPhysics(),
+              children: children,
             ),
           ),
         ],
@@ -244,21 +253,38 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget buildIconButton(BuildContext context, String label, IconData icon,
-      String route, Color bgColor) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: bgColor,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: Colors.white),
+  Widget buildFeatureButton({
+    required String label,
+    required IconData icon,
+    Color iconBgColor = Colors.greenAccent,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: 130, // 控制按钮宽度以适配 Wrap 和 Card 宽度
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: iconBgColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: Colors.white),
+            ),
+            SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            ),
+          ],
         ),
-        SizedBox(height: 6),
-        Text(label),
-      ],
+      ),
     );
   }
+
+
+
 }

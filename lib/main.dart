@@ -6,6 +6,7 @@ import 'package:EarthShareApp/register.dart';
 import 'package:EarthShareApp/emailLogin.dart';
 
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/profile',
+      initialRoute: '/register',
       routes: {
         '/profile': (context) => const ProfilePage(),
         '/register': (context) => const RegisterPage(),
