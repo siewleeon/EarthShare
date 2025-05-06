@@ -2,9 +2,8 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -50,51 +49,6 @@ class _RegisterPageState extends State<RegisterPage> {
       final newId = 'U${(number + 1).toString().padLeft(4, '0')}';
       return newId;
     }
-  }
-
-  Future<void> _saveProfile(String userId) async {
-    try {
-      //save personal information to firestore
-      await FirebaseFirestore.instance
-          .collection('Users')
-          .doc(userId)
-          .set({
-        'userId': userId,
-        'name': nameController.text,
-        'phone': phoneController.text,
-        'email': emailController.text,
-        'address': addressController.text,
-        'password':passwordController.text,
-        'profile_Picture': avatarUrl,
-      });
-
-      print("Save success");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Succeed to save profile！")),
-      );
-      Navigator.pop(context, true);
-
-    } catch (e) {
-      print("Save failed: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to save profile: $e")),
-      );
-    }
-  }
-
-  Future<int> _getNextUserId() async {
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('Users')
-        .orderBy('userId', descending: true)
-        .limit(1)
-        .get();
-
-    if (querySnapshot.docs.isEmpty) {
-      return 1; // first user
-    }
-
-    final lastUserId = querySnapshot.docs.first['userId'];
-    return lastUserId + 1;
   }
 
   @override
@@ -188,7 +142,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         onPressed: () async {
                           if (_formKey.currentState!.validate() && agreeToTerms) {
                             try {
-                              // 1. 注册 Firebase Auth 帐号
+
                               final credential = await FirebaseAuth.instance
                                   .createUserWithEmailAndPassword(
                                   email: emailController.text.trim(),
@@ -196,7 +150,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                               final userId = await _generateNewUserId();
 
-                              // 2. 保存 Firestore 中的资料（使用 Firebase uid 作 document ID）
+
                               await FirebaseFirestore.instance
                                   .collection('Users')
                                   .doc(credential.user!.uid)

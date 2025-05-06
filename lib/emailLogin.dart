@@ -158,7 +158,7 @@ class _LoginPageState extends State<EmailLoginPage> {
     return InputDecoration(
       labelText: label,
       filled: true,
-      fillColor: Colors.white.withOpacity(0.8),
+      fillColor: Colors.white,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
       ),

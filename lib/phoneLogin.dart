@@ -19,7 +19,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
     await FirebaseAuth.instance.verifyPhoneNumber(
       phoneNumber: phoneController.text.trim(),
       verificationCompleted: (PhoneAuthCredential credential) async {
-        // 自动登录（安卓）
+
         await FirebaseAuth.instance.signInWithCredential(credential);
         await _checkAndCreateUser();
       },
@@ -61,7 +61,6 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
     final userDoc = await FirebaseFirestore.instance.collection('Users').doc(uid).get();
 
     if (!userDoc.exists) {
-      // 初次注册 - 写入默认信息（可自定义为注册页）
       await FirebaseFirestore.instance.collection('Users').doc(uid).set({
         'userId': await _generateNewUserId(),
         'name': '',
