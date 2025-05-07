@@ -5,9 +5,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class EditProfilePage extends StatefulWidget {
-  final String userId;
+  final String userUid;
 
-  const EditProfilePage({Key? key, required this.userId}) : super(key: key);
+  const EditProfilePage({Key? key, required this.userUid}) : super(key: key);
 
   @override
   _EditProfilePageState createState() => _EditProfilePageState();
@@ -63,7 +63,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final ref = FirebaseStorage.instance
           .ref()
           .child('user_images')
-          .child('${widget.userId}.jpg');
+          .child('${widget.userUid}.jpg');
 
       print('Uploading image...');
       final uploadTask = await ref.putFile(_selectedImage!);
@@ -85,7 +85,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void _loadUserProfile() async {
     DocumentSnapshot doc = await FirebaseFirestore.instance
         .collection('Users')
-        .doc(widget.userId)
+        .doc(widget.userUid)
         .get();
 
     if (doc.exists) {
@@ -110,7 +110,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       //save personal information to firestore
       await FirebaseFirestore.instance
           .collection('Users')
-          .doc(widget.userId)
+          .doc(widget.userUid)
           .update({
         'name': nameController.text,
         'phone': phoneController.text,
