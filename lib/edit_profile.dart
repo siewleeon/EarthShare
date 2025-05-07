@@ -22,8 +22,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   String avatarUrl = '';
   String sampleAvatarUrl =
       'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
-  String? _uploadedImageUrl;
-  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -66,7 +64,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
           .child('${widget.userUid}.jpg');
 
       print('Uploading image...');
-      final uploadTask = await ref.putFile(_selectedImage!);
       print('Upload complete');
 
       final url = await ref.getDownloadURL();
