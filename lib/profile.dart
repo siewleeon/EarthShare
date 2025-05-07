@@ -18,7 +18,6 @@ class _ProfilePageState extends State<ProfilePage> {
   String phone = '';
   String email = '';
   String address = '';
-  bool isMember = false;
   String avatarUrl = '';
   String sampleAvatarUrl =
       'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
@@ -74,7 +73,6 @@ class _ProfilePageState extends State<ProfilePage> {
         phone = data['phone'] ?? '';
         email = data['email'] ?? '';
         address = data['address'] ?? '';
-        isMember = data['member_Status'] ?? false;
         avatarUrl = data['profile_Picture'] ?? '';
       });
     }
@@ -153,7 +151,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             child: Text(
                               username,
                               style: const TextStyle(
-                                fontSize: 20,
+                                fontSize: 25,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),
@@ -172,41 +170,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       Text(
                         userId,
-                        style: const TextStyle(fontSize: 10, color: Colors.blue),
+                        style: const TextStyle(fontSize: 15, color: Colors.grey),
                       ),
 
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.lightBlueAccent,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Text(
-                          'Non-Member',
-                          style: TextStyle(color: Colors.white, fontSize: 10),
-                        ),
-                      ),
 
-                      const SizedBox(height: 4),
-                      TextButton(
-                        onPressed: () {
-                          // go to upgrade page
-                        },
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(0, 0),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const Text(
-                          'Upgrade to become member?',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.blueAccent,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
+
                     ],
                   ),
                 ),
