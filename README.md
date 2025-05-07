@@ -1,4 +1,4 @@
-# p8userprofile
+# EarthShareApp
 
 A new Flutter project.
 

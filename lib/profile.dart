@@ -64,7 +64,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   @override
-
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -155,7 +154,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 0, 100, 0), // 控制 edit button 靠右上角一点点
+                      padding: const EdgeInsets.fromLTRB(0, 0, 100, 0),
                       child: IconButton(
                         padding: EdgeInsets.zero,
                         constraints: BoxConstraints(),
@@ -256,13 +255,13 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget buildFeatureButton({
     required String label,
     required IconData icon,
-    Color iconBgColor = Colors.greenAccent,
+    Color iconBgColor = Colors.lightGreenAccent,
     VoidCallback? onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
-        width: 130, // 控制按钮宽度以适配 Wrap 和 Card 宽度
+        width: 130, 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
