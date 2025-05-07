@@ -46,7 +46,7 @@ class MainApp extends StatelessWidget {
       child: MaterialApp(
         navigatorKey: navigatorKey,
         title: 'EarthShare',
-        initialRoute: '/homa',
+        initialRoute: '/home',
         routes: {  
           '/home': (context) => const HomePage(),
           '/history': (context) => const HistoryPage(),
