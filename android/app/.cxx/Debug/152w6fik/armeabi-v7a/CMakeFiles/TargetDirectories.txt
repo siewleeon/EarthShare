@@ -1,0 +1,2 @@
+C:/Users/liang/Desktop/EarthShare/android/app/.cxx/Debug/152w6fik/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/liang/Desktop/EarthShare/android/app/.cxx/Debug/152w6fik/armeabi-v7a/CMakeFiles/rebuild_cache.dir
