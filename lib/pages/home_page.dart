@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:second_hand_shop/pages/Product/post_page.dart';
 import '../models/product.dart';
 import '../providers/cart_provider.dart';
 import '../providers/product_provider.dart';  
@@ -392,24 +393,36 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildAddButton() {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: Colors.blue,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 5,
+    return Builder(
+        builder: (context) => GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const PostPage(),
           ),
-        ],
+        );
+      },
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: Colors.blue,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.withOpacity(0.3),
+              spreadRadius: 2,
+              blurRadius: 5,
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
       ),
-      child: const Icon(
-        Icons.add,
-        color: Colors.white,
-      ),
+    )
     );
   }
 }

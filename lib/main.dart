@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:second_hand_shop/pages/Product/post_page.dart';
 import 'providers/point_provider.dart'; 
 import 'pages/home_page.dart';
 import 'profile.dart';  
@@ -50,6 +51,7 @@ class MainApp extends StatelessWidget {
         routes: {  
           '/home': (context) => const HomePage(),
           '/history': (context) => const HistoryPage(),
+          '/post': (context) => const PostPage(),
           '/profile': (context) => const ProfilePage(),
           '/register': (context) => const RegisterPage(),
           '/emailLogin': (context) => const EmailLoginPage(),
