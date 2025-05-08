@@ -35,14 +35,14 @@ class _LoginPageState extends State<EmailLoginPage> {
         const SnackBar(content: Text('Login successful!')),
       );
 
-
       Navigator.pushReplacementNamed(context, '/home'); // or your home route
-    } on FirebaseAuthException catch (e) {
+    }
+    on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Login failed: ${e.message} (code: ${e.code})')),
-
       );
-    } finally {
+    }
+    finally {
       setState(() {
         _isLoading = false;
       });
@@ -119,13 +119,25 @@ class _LoginPageState extends State<EmailLoginPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
-                            );                          },
+                            );
+                          },
                           child: const Text(
                             "Forgot password?",
                             style: TextStyle(
                               color: Colors.blueAccent,
                               decoration: TextDecoration.underline,
                             ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        TextButton(onPressed: () {
+                          Navigator.pushNamed(context, '/adminLogin');
+                        },
+                          child: const Text("admin",style: TextStyle(color: Colors.blueAccent,
+                              decoration: TextDecoration.underline),
                           ),
                         ),
                       ],
@@ -140,8 +152,7 @@ class _LoginPageState extends State<EmailLoginPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(
+                      child: _isLoading ? const CircularProgressIndicator(
                         color: Colors.white,
                       )
                           : const Text('Login'),
