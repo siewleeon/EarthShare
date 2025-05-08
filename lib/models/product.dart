@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 enum ProductCondition { new_, almostNew, good, fair }
@@ -72,18 +73,18 @@ class Product {
       id: map['id'] ?? '',
       name: map['product_Name'] ?? '',
       price: (map['product_Price'] ?? 0.0).toDouble(),
-      imageUrl: (map['image_ID'] as List<dynamic>?)?.isNotEmpty == true 
-          ? (map['image_ID'] as List<dynamic>).first.toString()
+      imageUrl: (map['images'] as List<dynamic>?)?.isNotEmpty == true
+          ? (map['images'] as List<dynamic>).first.toString()
           : '',
-      category: (map['product_Cetogory'] as List<dynamic>?)?.isNotEmpty == true 
-          ? (map['product_Cetogory'] as List<dynamic>).first.toString()
+      category: (map['product_Category'] as List<dynamic>?)?.isNotEmpty == true
+          ? (map['product_Category'] as List<dynamic>).first.toString()
           : '',
-      uploadTime: DateTime.parse(map['product_Upload_'] ?? DateTime.now().toIso8601String()),
-      editTime: DateTime.parse(map['product_Edit_Time'] ?? DateTime.now().toIso8601String()),
+      uploadTime: (map['product_Upload_Time'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      editTime: (map['product_Edit_Time'] as Timestamp?)?.toDate() ?? DateTime.now(),
       quantity: map['product_Quantity'] ?? 0,
-      productCategory: List<String>.from(map['product_Cetogory'] ?? []),
-      sellerId: map['saller_ID'] ?? '',
-      imageId: List<String>.from(map['image_ID'] ?? []),
+      productCategory: List<String>.from(map['product_Category'] ?? []),
+      sellerId: map['seller_ID'] ?? '',
+      imageId: List<String>.from(map['images'] ?? []),
       description: map['product_Description'] ?? '',
       degreeOfNewness: map['degree_of_Newness'] ?? 1,
     );
@@ -98,12 +99,27 @@ class Product {
       'product_Upload_': uploadTime.toIso8601String(),
       'product_Edit_Time': editTime.toIso8601String(),
       'product_Quantity': quantity,
-      'product_Cetogory': productCategory,
-      'saller_ID': sellerId,
-      'image_ID': imageId,
+      'product_Category': productCategory,
+      'seller_ID': sellerId,
+      'images': imageId,
       'product_Description': description,
       'degree_of_Newness': degreeOfNewness,
     };
+  }
+
+  String get conditionLabel {
+    switch (degreeOfNewness) {
+      case 1:
+        return 'Brand New';
+      case 2:
+        return 'Almost New';
+      case 3:
+        return 'Good Condition';
+      case 4:
+        return 'Heavily Used';
+      default:
+        return 'Unknown';
+    }
   }
 }
 

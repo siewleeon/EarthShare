@@ -41,6 +41,22 @@ class _PostPageState extends State<PostPage> {
     }
   }
 
+  Future<String> _generateProductID() async {
+    final counterRef = FirebaseFirestore.instance.collection('counters').doc('product_counter');
+    final snapshot = await counterRef.get();
+
+    int latestNumber = 0;
+    if (snapshot.exists && snapshot.data()!.containsKey('latest_product_number')) {
+      latestNumber = snapshot.data()!['latest_product_number'];
+    }
+
+    final newNumber = latestNumber + 1;
+    await counterRef.set({'latest_product_number': newNumber});
+
+    return 'P${newNumber.toString().padLeft(4, '0')}';
+  }
+
+
   void _showImageSourceSelector() {
     showModalBottomSheet(
       context: context,
@@ -94,7 +110,7 @@ class _PostPageState extends State<PostPage> {
   }
 
   Future<void> _uploadProduct() async {
-    String productID = "P${DateTime.now().millisecondsSinceEpoch}";
+    String productID = await _generateProductID(); // 获取格式化好的 ID
     String name = _nameController.text.trim();
     double price = double.tryParse(_priceController.text.trim()) ?? 0.0;
     int quantity = int.tryParse(_quantityController.text.trim()) ?? 0;
@@ -108,7 +124,7 @@ class _PostPageState extends State<PostPage> {
       );
       return;
     }
-     if(_selectedCondition == "brand new"){
+     if(_selectedCondition == "Brand new"){
        Condition = 1;
      }
      else if(_selectedCondition == "Almost new"){
@@ -123,30 +139,29 @@ class _PostPageState extends State<PostPage> {
 
 
 
-    List<String> imageUrls = [];
-
-    for (var image in _images) {
+    List<Future<String>> uploadFutures = _images.map((image) async {
       final file = File(image.path);
       final ref = FirebaseStorage.instance
           .ref()
-          .child('product/${DateTime.now().millisecondsSinceEpoch}.jpg');
-
+          .child('product/${DateTime.now().millisecondsSinceEpoch}_${image.name}');
       await ref.putFile(file);
-      final downloadUrl = await ref.getDownloadURL();
-      imageUrls.add(downloadUrl);
-    }
+      return await ref.getDownloadURL();
+    }).toList();
 
-    await FirebaseFirestore.instance.collection('product').add({
+    List<String> imageUrls = await Future.wait(uploadFutures);
+
+
+    await FirebaseFirestore.instance.collection('products').add({
       "product_ID": productID,
       "product_Name": name,
       "product_Price": price,
       "product_Quantity": quantity,
       "product_Description": description,
-      "product_Cetogory": selectedCategories,
-      "product_SallerID": sellerID,
+      "product_Category": selectedCategories,
+      "product_SellerID": sellerID,
       "images": imageUrls,
       'degree_of_Newness': Condition,
-      "product_Uplode_Time": FieldValue.serverTimestamp(),
+      "product_Upload_Time": FieldValue.serverTimestamp(),
       "product_Edit_Time": FieldValue.serverTimestamp(),
     });
 
@@ -187,7 +202,7 @@ class _PostPageState extends State<PostPage> {
             _buildCategorySelector(),
             const SizedBox(height: 10),
             _adddegree_of_Newness(),
-            _buildTextField(_descriptionController, 'Discribe', maxLines: 3),
+            _buildTextField(_descriptionController, 'Description', maxLines: 3),
             ElevatedButton.icon(
               onPressed: _uploadProduct,
               icon: const Icon(Icons.upload),
@@ -277,7 +292,7 @@ class _PostPageState extends State<PostPage> {
 
         const SizedBox(height: 10),
         _images.isEmpty
-            ? const Text('On Picture')
+            ? const Text('No picture selected')
             : SizedBox(
           height: 180,
           child: ListView.builder(
