@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:second_hand_shop/accountSetting.dart';
+import 'package:second_hand_shop/pages/contactUs_page.dart';
+import 'package:second_hand_shop/pages/points_page.dart';
 import './edit_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -84,42 +86,74 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Fullscreen background image
+          // 背景图
           Positioned.fill(
             child: Image.asset(
               'assets/images/profile_background.png',
               fit: BoxFit.cover,
             ),
           ),
-          // Foreground content
+          // 前景内容
           SingleChildScrollView(
             child: Column(
               children: [
                 buildTopSection(),
 
                 buildCardSection("My Points", [
-                  buildFeatureButton(label: "Voucher", icon: Icons.confirmation_number),
-                  buildFeatureButton(label: "Earning Points", icon: Icons.monetization_on, iconBgColor: Colors.purple.shade50),
+                  buildFeatureButton(
+                    label: "Voucher",
+                    icon: Icons.confirmation_number,
+                  ),
+                  buildFeatureButton(
+                    label: "Earning Points",
+                    icon: Icons.monetization_on,
+                    iconBgColor: Colors.purple.shade50,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PointsPage(userId: userId),
+                        ),
+                      );
+                    },
+                  ),
                 ]),
 
                 buildCardSection("My Store", [
-                  buildFeatureButton(label: "My Post", icon: Icons.post_add),
-                  buildFeatureButton(label: "History", icon: Icons.lock_clock, iconBgColor: Colors.grey),
+                  buildFeatureButton(
+                    label: "My Post",
+                    icon: Icons.post_add,
+                  ),
+                  buildFeatureButton(
+                    label: "History",
+                    icon: Icons.lock_clock,
+                    iconBgColor: Colors.grey,
+                  ),
                 ]),
 
                 buildCardSection("Support", [
-                  buildFeatureButton(label: "Contact Us", icon: Icons.support_agent),
+                  buildFeatureButton(
+                    label: "Contact Us",
+                    icon: Icons.support_agent,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ContactUsPage(),
+                        ),
+                      );
+                    },
+                  ),
                 ]),
               ],
             ),
           ),
-
         ],
       ),
-      bottomNavigationBar: _buildBottomNavigationBar()
-
+      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
+
 
   Widget buildTopSection() {
     return Padding(
@@ -196,7 +230,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-
   Widget buildCardSection(String title, List<Widget> children) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
@@ -247,9 +280,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }) {
     return GestureDetector(
       onTap: onTap,
-
       child: SizedBox(
-
         child: Column(
           children: [
             Container(

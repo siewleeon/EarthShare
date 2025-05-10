@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
@@ -17,11 +18,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController nameController;
   late TextEditingController phoneController;
   late TextEditingController emailController;
-  late TextEditingController addressController;
   File? _selectedImage;
   String avatarUrl = '';
   String sampleAvatarUrl =
       'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+  late TextEditingController currentPasswordController;
+  late TextEditingController newPasswordController;
+
 
   @override
   void initState() {
@@ -29,7 +32,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     nameController = TextEditingController();
     phoneController = TextEditingController();
     emailController = TextEditingController();
-    addressController = TextEditingController();
+    currentPasswordController = TextEditingController();
+    newPasswordController = TextEditingController();
     _loadUserProfile();
   }
 
@@ -38,7 +42,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     nameController.dispose();
     phoneController.dispose();
     emailController.dispose();
-    addressController.dispose();
+    currentPasswordController.dispose();
+    newPasswordController.dispose();
     super.dispose();
   }
 
@@ -91,7 +96,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
         nameController.text = data['name'] ?? '';
         phoneController.text = data['phone'] ?? '';
         emailController.text = data['email'] ?? '';
-        addressController.text = data['address'] ?? '';
         avatarUrl = data['profile_Picture'] ?? '';
 
       });
@@ -112,7 +116,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
         'name': nameController.text,
         'phone': phoneController.text,
         'email': emailController.text,
-        'address': addressController.text,
         'profile_Picture': avatarUrl,
       });
 
@@ -128,6 +131,160 @@ class _EditProfilePageState extends State<EditProfilePage> {
         SnackBar(content: Text("Failed to save profile: $e")),
       );
     }
+  }
+
+  void _changePassword() {
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    bool showCurrentPassword = false;
+    bool showNewPassword = false;
+    bool showConfirmPassword = false;
+    String passwordStrength = '';
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            String checkPasswordStrength(String password) {
+              if (password.length < 6) return "Too short";
+              bool hasUpper = password.contains(RegExp(r'[A-Z]'));
+              bool hasLower = password.contains(RegExp(r'[a-z]'));
+              bool hasDigit = password.contains(RegExp(r'[0-9]'));
+              bool hasSpecial = password.contains(RegExp(r'[!@#\$&*~]'));
+
+              int strength = [hasUpper, hasLower, hasDigit, hasSpecial].where((e) => e).length;
+              switch (strength) {
+                case 4:
+                  return "Strong";
+                case 3:
+                  return "Medium";
+                case 2:
+                  return "Weak";
+                default:
+                  return "Very weak";
+              }
+            }
+
+            return AlertDialog(
+              title: const Text('Change Password'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: currentPasswordController,
+                      obscureText: !showCurrentPassword,
+                      decoration: InputDecoration(
+                        labelText: 'Current Password',
+                        suffixIcon: IconButton(
+                          icon: Icon(showCurrentPassword ? Icons.visibility : Icons.visibility_off),
+                          onPressed: () => setState(() => showCurrentPassword = !showCurrentPassword),
+                        ),
+                      ),
+                    ),
+                    TextField(
+                      controller: newPasswordController,
+                      obscureText: !showNewPassword,
+                      onChanged: (val) {
+                        setState(() {
+                          passwordStrength = checkPasswordStrength(val);
+                        });
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'New Password',
+                        suffixIcon: IconButton(
+                          icon: Icon(showNewPassword ? Icons.visibility : Icons.visibility_off),
+                          onPressed: () => setState(() => showNewPassword = !showNewPassword),
+                        ),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text("Strength: $passwordStrength"),
+                    ),
+                    TextField(
+                      controller: confirmPasswordController,
+                      obscureText: !showConfirmPassword,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm New Password',
+                        suffixIcon: IconButton(
+                          icon: Icon(showConfirmPassword ? Icons.visibility : Icons.visibility_off),
+                          onPressed: () => setState(() => showConfirmPassword = !showConfirmPassword),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final currentPassword = currentPasswordController.text.trim();
+                    final newPassword = newPasswordController.text.trim();
+                    final confirmPassword = confirmPasswordController.text.trim();
+
+                    if (newPassword != confirmPassword) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('New passwords do not match')),
+                      );
+                      return;
+                    }
+
+                    try {
+                      final user = FirebaseAuth.instance.currentUser;
+                      if (user == null) throw 'No user signed in';
+
+                      final cred = EmailAuthProvider.credential(
+                        email: user.email!,
+                        password: currentPassword,
+                      );
+
+                      // Re-authenticate
+                      await user.reauthenticateWithCredential(cred);
+
+                      // Update password
+                      await user.updatePassword(newPassword);
+
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Password updated successfully. Logging out...')),
+                      );
+
+                      await FirebaseAuth.instance.signOut();
+                      if (context.mounted) {
+                        Navigator.of(context).popUntil((route) => route.isFirst); // return to login
+                      }
+                    } catch (e) {
+                      Navigator.pop(context);
+
+                      String errorMsg = 'Failed to update password.';
+                      if (e is FirebaseAuthException) {
+                        if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+                          errorMsg = 'Incorrect current password.';
+                        } else {
+                          errorMsg = 'Error: ${e.message}';
+                        }
+                      }
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(errorMsg)),
+                      );
+                    }
+                  },
+                  child: const Text('Change'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -171,11 +328,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
               decoration: const InputDecoration(labelText: 'Email'),
               keyboardType: TextInputType.emailAddress,
             ),
-            //address
-            TextField(
-              controller: addressController,
-              decoration: const InputDecoration(labelText: 'Address'),
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              onPressed: _changePassword,
+              child: const Text('Change Password'),
             ),
+
+
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _saveProfile,

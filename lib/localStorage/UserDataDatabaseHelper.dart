@@ -14,7 +14,7 @@ class UserDataDatabaseHelper {
   // 打开数据库
   _initDatabase() async {
     String path = join(await getDatabasesPath(), 'user_data.db');
-    return openDatabase(path, version: 1, onCreate: _onCreate);
+    return openDatabase(path, version: 2, onCreate: _onCreate);
   }
 
   // 创建表
@@ -22,6 +22,7 @@ class UserDataDatabaseHelper {
     await db.execute('''
       CREATE TABLE bank_accounts(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userID TEXT,
         bankName TEXT,
         cardNumber TEXT,
         cardHolder TEXT,
@@ -52,13 +53,28 @@ class UserDataDatabaseHelper {
   // 插入银行卡数据
   Future<int> insertBankAccount(Map<String, dynamic> data) async {
     final db = await database;
+    print('Inserting bank account: $data');
     return await db.insert('bank_accounts', data);
+  }
+  Future<int> deleteBankAccount(int id) async {
+    final db = await database;
+    return await db.delete('bank_accounts', where: 'id = ?', whereArgs: [id]);
   }
 
   // 获取所有银行卡数据
   Future<List<Map<String, dynamic>>> getBankAccounts() async {
     final db = await database;
     return await db.query('bank_accounts');
+  }
+
+  // 获取指定用户的银行卡数据
+  Future<List<Map<String, dynamic>>> getBankAccountsByUserID(String userID) async {
+    final db = await database;
+    return await db.query(
+      'bank_accounts',
+      where: 'userID = ?', // Condition to match userID
+      whereArgs: [userID],  // Pass userID as argument
+    );
   }
 
   // 插入 Contact Us 数据
