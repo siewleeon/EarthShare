@@ -1,9 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import './Manage/manageUserList.dart';
-import './Manage/manageVoucherList.dart';
-import './Manage/manageProductsList.dart';
-import './Manage/salesReport.dart';
 
 class AdminProfile extends StatefulWidget {
   const AdminProfile({super.key});
@@ -36,6 +32,7 @@ class _ProfilePageState extends State<AdminProfile>
         {
           debugPrint("voucher");
           // Change page to Manage Voucher
+          Navigator.pushNamed(context, "/manageVoucherPage");
           break;
         }
       case 3:
