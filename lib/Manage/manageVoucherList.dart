@@ -12,6 +12,25 @@ class ManageVoucherList extends StatefulWidget {
 }
 
 class _ListPageState extends State<ManageVoucherList> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  bool _showExpiredOnly = false; // Tracks whether to show only expired vouchers
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.toLowerCase();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   void changePage(int page) {
     switch (page) {
@@ -55,9 +74,11 @@ class _ListPageState extends State<ManageVoucherList> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildSortButton(), // New sort button
-                const SizedBox(width: 8), // Space between buttons
+                _buildSortButton(),
+                const SizedBox(width: 8),
                 _buildAddButton(),
+                const SizedBox(width: 8),
+                _buildExpiredButton(),
               ],
             ),
             Expanded(child: _buildVoucherList()),
@@ -87,10 +108,19 @@ class _ListPageState extends State<ManageVoucherList> {
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
+              controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search here',
+                hintText: 'Search by description',
                 border: InputBorder.none,
                 hintStyle: TextStyle(color: Colors.grey[400]),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                  icon: const Icon(Icons.clear, color: Colors.grey),
+                  onPressed: () {
+                    _searchController.clear();
+                  },
+                )
+                    : null,
               ),
             ),
           ),
@@ -110,7 +140,7 @@ class _ListPageState extends State<ManageVoucherList> {
           height: 44,
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.green, // You can change the color to match your design
+            color: Colors.green,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
@@ -121,7 +151,39 @@ class _ListPageState extends State<ManageVoucherList> {
             ],
           ),
           child: const Icon(
-            Icons.sort, // Icon for sorting
+            Icons.sort,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExpiredButton() {
+    return Builder(
+      builder: (context) => GestureDetector(
+        onTap: () {
+          setState(() {
+            _showExpiredOnly = !_showExpiredOnly; // Toggle expired filter
+          });
+        },
+        child: Container(
+          width: 44,
+          height: 44,
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: _showExpiredOnly ? Colors.red[700] : Colors.red,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.red.withValues(alpha: 0.3),
+                spreadRadius: 2,
+                blurRadius: 5,
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.history, // Icon to represent expired vouchers
             color: Colors.white,
           ),
         ),
@@ -180,9 +242,18 @@ class _ListPageState extends State<ManageVoucherList> {
           );
         }
 
-        final vouchers = voucherProvider.vouchers;
+        // Filter vouchers based on search query and expired status
+        final now = DateTime.now();
+        final vouchers = voucherProvider.vouchers.where((voucher) {
+          final matchesSearch = voucher.description.toLowerCase().contains(_searchQuery);
+          final isExpired = voucher.expired_date.isBefore(now);
+          return matchesSearch && (!_showExpiredOnly || isExpired);
+        }).toList();
+
         if (vouchers.isEmpty) {
-          return const Center(child: Text("no voucher found"));
+          return Center(
+            child: Text(_showExpiredOnly ? "No expired vouchers found" : "No vouchers found"),
+          );
         }
 
         return ListView.builder(

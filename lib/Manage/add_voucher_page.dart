@@ -18,8 +18,20 @@ class _AddVoucherPageState extends State<AddVoucherPage> {
   final _pointsController = TextEditingController();
   final _totalController = TextEditingController();
   DateTime? _expiredDate;
-
+  bool _isAutoGenerateId = true;
   bool _isLoading = false;
+  bool _canAutoGenerate = true;
+  String? _autoGenerateError;
+  bool _useSmallestId = false; // False: use largest ID, True: use smallest ID
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAutoGeneratePossibility();
+    if (_isAutoGenerateId && _canAutoGenerate) {
+      _generateVoucherId();
+    }
+  }
 
   @override
   void dispose() {
@@ -31,12 +43,44 @@ class _AddVoucherPageState extends State<AddVoucherPage> {
     super.dispose();
   }
 
+  Future<void> _checkAutoGeneratePossibility() async {
+    final voucherProvider = Provider.of<VoucherProvider>(context, listen: false);
+    final nextId = await (_useSmallestId
+        ? voucherProvider.generateSmallestNonTakenVoucherId()
+        : voucherProvider.generateNextVoucherId());
+    final numberPart = nextId.substring(1);
+    final number = int.tryParse(numberPart) ?? 0;
+    setState(() {
+      if (number > 9999) {
+        _canAutoGenerate = false;
+        _autoGenerateError = 'Max ID (V9999) reached';
+        if (_isAutoGenerateId) {
+          _isAutoGenerateId = false;
+          _idController.clear();
+        }
+      } else {
+        _canAutoGenerate = true;
+        _autoGenerateError = null;
+      }
+    });
+  }
+
+  Future<void> _generateVoucherId() async {
+    final voucherProvider = Provider.of<VoucherProvider>(context, listen: false);
+    final newId = await (_useSmallestId
+        ? voucherProvider.generateSmallestNonTakenVoucherId()
+        : voucherProvider.generateNextVoucherId());
+    setState(() {
+      _idController.text = newId;
+    });
+  }
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime now = DateTime.now();
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _expiredDate ?? now,
-      firstDate: now, // Restrict to today or later
+      firstDate: now,
       lastDate: DateTime(2101),
     );
     if (picked != null && picked != _expiredDate) {
@@ -49,7 +93,7 @@ class _AddVoucherPageState extends State<AddVoucherPage> {
   void _addVoucher() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
-        _isLoading = true; // Show loading indicator
+        _isLoading = true;
       });
 
       final voucher = Voucher(
@@ -66,22 +110,18 @@ class _AddVoucherPageState extends State<AddVoucherPage> {
         final success = await voucherProvider.addVoucher(voucher);
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Voucher added successfully'))
+            const SnackBar(content: Text('Voucher added successfully')),
           );
           Navigator.pop(context);
-          // Refresh the parent page by notifying the provider to fetch updated data
           voucherProvider.fetchVoucher();
-        }
-        else {
+        } else {
           throw Exception('Voucher ID ${voucher.id} is already taken');
         }
-      }
-      catch (e) {
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('$e')),
         );
-      }
-      finally {
+      } finally {
         setState(() {
           _isLoading = false;
         });
@@ -112,28 +152,95 @@ class _AddVoucherPageState extends State<AddVoucherPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextFormField(
-                      controller: _idController,
-                      decoration: const InputDecoration(labelText: 'Voucher ID (e.g., V0001)'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a voucher ID';
-                        }
-                        // Check format: starts with "V" followed by 4 digits
-                        if (!value.startsWith('V') || value.length != 5) {
-                          return 'Voucher ID must start with "V" followed by 4 digits (e.g., V0001)';
-                        }
-                        // Extract the numeric part and validate
-                        final numberPart = value.substring(1);
-                        final number = int.tryParse(numberPart);
-                        if (number == null || number <= 0) {
-                          return 'The number part must be a positive integer';
-                        }
-                        if (numberPart.length != 4) {
-                          return 'The number part must be exactly 4 digits';
-                        }
-                        return null;
-                      },
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _idController,
+                            decoration: const InputDecoration(
+                              labelText: 'Voucher ID (e.g., V0001)',
+                            ),
+                            enabled: !_isAutoGenerateId,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a voucher ID';
+                              }
+                              if (_isAutoGenerateId) return null;
+                              if (!value.startsWith('V') || value.length != 5) {
+                                return 'Voucher ID must start with "V" followed by 4 digits (e.g., V0001)';
+                              }
+                              final numberPart = value.substring(1);
+                              final number = int.tryParse(numberPart);
+                              if (number == null || number <= 0) {
+                                return 'The number part must be a positive integer';
+                              }
+                              if (numberPart.length != 4) {
+                                return 'The number part must be exactly 4 digits';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Row(
+                              children: [
+                                const Text('Auto ID'),
+                                Switch(
+                                  value: _isAutoGenerateId,
+                                  onChanged: _canAutoGenerate
+                                      ? (value) {
+                                    setState(() {
+                                      _isAutoGenerateId = value;
+                                      if (value) {
+                                        _generateVoucherId();
+                                      } else {
+                                        _idController.clear();
+                                      }
+                                    });
+                                  }
+                                      : null,
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Text(_useSmallestId ? 'Use Largest ID' : 'Use Smallest ID'),
+                                Switch(
+                                  value: _useSmallestId,
+                                  onChanged: _isAutoGenerateId && _canAutoGenerate
+                                      ? (value) {
+                                    setState(() {
+                                      _useSmallestId = value;
+                                      _checkAutoGeneratePossibility();
+                                      if (_isAutoGenerateId) {
+                                        _generateVoucherId();
+                                      }
+                                    });
+                                  }
+                                      : null,
+                                ),
+                              ],
+                            ),
+                            if (_autoGenerateError != null)
+                              Container(
+                                constraints: const BoxConstraints(maxWidth: 100),
+                                child: Text(
+                                  _autoGenerateError!,
+                                  style: const TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 10,
+                                  ),
+                                  textAlign: TextAlign.end,
+                                  softWrap: true,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -239,7 +346,7 @@ class _AddVoucherPageState extends State<AddVoucherPage> {
           ),
           if (_isLoading)
             Container(
-              color: Colors.white.withValues(alpha: 0.7), // Slightly white overlay
+              color: Colors.white.withValues(alpha: 0.7),
               child: const Center(
                 child: CircularProgressIndicator(),
               ),

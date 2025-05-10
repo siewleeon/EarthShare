@@ -1,20 +1,21 @@
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/voucher.dart';
 import '../repositories/voucher_repository.dart';
 
 class VoucherProvider extends ChangeNotifier {
   final VoucherRepository _voucherRepository = VoucherRepository();
   List<Voucher> _vouchers = [];
+  Map<String, String> _voucherIdToDocId = {};
   bool _isLoading = false;
   String? _error;
-
-  bool _isDescending = true; // Track sort direction, default to descending
+  bool _isDescending = true;
 
   List<Voucher> get vouchers => [..._vouchers];
-
   bool get isLoading => _isLoading;
-
   String? get error => _error;
+
+  final CollectionReference _vouchersCollection = FirebaseFirestore.instance.collection('Voucher');
 
   Future<void> fetchVoucher() async {
     _isLoading = true;
@@ -22,38 +23,98 @@ class VoucherProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final voucher = await _voucherRepository.getAllVoucher();
-      _vouchers = voucher;
-      debugPrint(voucher.toString());
-    }
-    catch (e) {
-      _error = 'failed to load: $e';
+      final snapshot = await _vouchersCollection.get();
+      _vouchers = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        final voucher = Voucher.fromMap(data);
+        _voucherIdToDocId[voucher.id] = doc.id;
+        return voucher;
+      }).toList();
+      debugPrint('Vouchers fetched: ${_vouchers.length}');
+    } catch (e) {
+      _error = 'Failed to load: $e';
       debugPrint(_error);
-    }
-    finally {
+    } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
+  Future<String> generateNextVoucherId() async {
+    try {
+      if (_vouchers.isEmpty) {
+        await fetchVoucher();
+      }
+
+      int maxNumber = 0;
+      for (var voucher in _vouchers) {
+        final id = voucher.id;
+        if (id.startsWith('V') && id.length == 5) {
+          final numberPart = id.substring(1);
+          final number = int.tryParse(numberPart);
+          if (number != null && number > maxNumber) {
+            maxNumber = number;
+          }
+        }
+      }
+
+      final nextNumber = maxNumber + 1;
+      return 'V${nextNumber.toString().padLeft(4, '0')}';
+    } catch (e) {
+      debugPrint('Failed to generate voucher ID: $e');
+      return 'V0001';
+    }
+  }
+
+  Future<String> generateSmallestNonTakenVoucherId() async {
+    try {
+      if (_vouchers.isEmpty) {
+        await fetchVoucher();
+      }
+
+      // Collect all used numbers
+      final usedNumbers = _vouchers
+          .map((voucher) {
+        final id = voucher.id;
+        if (id.startsWith('V') && id.length == 5) {
+          return int.tryParse(id.substring(1));
+        }
+        return null;
+      })
+          .where((number) => number != null)
+          .cast<int>()
+          .toSet();
+
+      // Find the smallest non-taken number from 1 to 9999
+      for (int i = 1; i <= 9999; i++) {
+        if (!usedNumbers.contains(i)) {
+          return 'V${i.toString().padLeft(4, '0')}';
+        }
+      }
+
+      // If all numbers up to 9999 are taken, return V0001 as fallback
+      return 'V0001';
+    } catch (e) {
+      debugPrint('Failed to generate smallest non-taken voucher ID: $e');
+      return 'V0001';
+    }
+  }
+
   void toggleSortVouchersById() {
-    _isDescending = !_isDescending; // Toggle sort direction
+    _isDescending = !_isDescending;
     _vouchers.sort((a, b) {
-      // Extract the numeric part of voucher_ID (e.g., "0001" from "V0001")
-      final aNumber = int.parse(a.id.substring(1)); // Skip "V" and parse the rest
+      final aNumber = int.parse(a.id.substring(1));
       final bNumber = int.parse(b.id.substring(1));
-      // Sort based on direction
       return _isDescending ? bNumber.compareTo(aNumber) : aNumber.compareTo(bNumber);
     });
-    notifyListeners(); // Notify listeners to rebuild the UI with the sorted list
+    notifyListeners();
   }
 
   Future<Voucher?> getVoucherById(String voucherID) async {
     try {
       return await _voucherRepository.getVoucherById(voucherID);
-    }
-    catch (e) {
-      debugPrint('failed to get voucher: $e');
+    } catch (e) {
+      debugPrint('Failed to get voucher: $e');
       return null;
     }
   }
@@ -63,25 +124,21 @@ class VoucherProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Check if voucher_ID is already taken
       if (_vouchers.any((v) => v.id == voucher.id)) {
         throw Exception('Voucher ID ${voucher.id} is already taken');
       }
 
-      final voucherID = await _voucherRepository.addVoucher(voucher);
-      if (voucherID != null) {
-        final newVoucher = voucher.copyWith(id: voucherID);
-        _vouchers.add(newVoucher);
-        notifyListeners();
-        return true;
-      }
+      final docRef = await _vouchersCollection.add(voucher.toMap());
+      final newVoucher = voucher.copyWith(id: voucher.id);
+      _vouchers.add(newVoucher);
+      _voucherIdToDocId[voucher.id] = docRef.id;
+      debugPrint('Added voucher with doc ID: ${docRef.id}');
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('Failed to add voucher: $e');
       return false;
-    }
-    catch (e) {
-      debugPrint('failed to add voucher: $e');
-      return false;
-    }
-    finally {
+    } finally {
       _isLoading = false;
       notifyListeners();
     }
@@ -92,18 +149,20 @@ class VoucherProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final success = await _voucherRepository.updateVoucher(voucher);
-      if (success) {
-        final index = _vouchers.indexWhere((v) => v.id == voucher.id);
-        if (index >= 0) {
-          _vouchers[index] = voucher;
-          notifyListeners();
-        }
-        return true;
+      final docId = _voucherIdToDocId[voucher.id];
+      if (docId == null) {
+        throw Exception('Document ID not found for voucher ${voucher.id}');
       }
-      return false;
+      await _vouchersCollection.doc(docId).update(voucher.toMap());
+      final index = _vouchers.indexWhere((v) => v.id == voucher.id);
+      if (index >= 0) {
+        _vouchers[index] = voucher;
+        notifyListeners();
+      }
+      debugPrint('Updated voucher with doc ID: $docId');
+      return true;
     } catch (e) {
-      debugPrint('failed to update voucher: $e');
+      debugPrint('Failed to update voucher: $e');
       return false;
     } finally {
       _isLoading = false;
@@ -116,15 +175,18 @@ class VoucherProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final success = await _voucherRepository.deleteVoucher(voucherID);
-      if (success) {
-        _vouchers.removeWhere((v) => v.id == voucherID);
-        notifyListeners();
-        return true;
+      final docId = _voucherIdToDocId[voucherID];
+      if (docId == null) {
+        throw Exception('Document ID not found for voucher $voucherID');
       }
-      return false;
+      await _vouchersCollection.doc(docId).delete();
+      _vouchers.removeWhere((v) => v.id == voucherID);
+      _voucherIdToDocId.remove(voucherID);
+      debugPrint('Deleted voucher with doc ID: $docId');
+      notifyListeners();
+      return true;
     } catch (e) {
-      debugPrint('failed to delete voucher: $e');
+      debugPrint('Failed to delete voucher: $e');
       return false;
     } finally {
       _isLoading = false;

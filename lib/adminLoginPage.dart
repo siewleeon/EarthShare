@@ -99,7 +99,7 @@ class _LoginPageState extends State<AdminLoginPage> {
                 Row(
                   children: [
                     TextButton(onPressed: () {
-                      Navigator.pushNamed(context, '/emailLogin');
+                      Navigator.pop(context);
                     },
                       child: const Text("email login",style: TextStyle(color: Colors.blueAccent,
                           decoration: TextDecoration.underline),

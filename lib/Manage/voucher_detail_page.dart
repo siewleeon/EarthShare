@@ -64,6 +64,8 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Voucher updated')),
     );
+    Navigator.pop(context);
+    voucherProvider.fetchVoucher();
   }
 
   void _cancelChanges() {
@@ -156,10 +158,11 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                       onPressed: () async {
                         final voucherProvider = Provider.of<VoucherProvider>(context, listen: false);
                         await voucherProvider.deleteVoucher(widget.voucher.id);
-                        Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Voucher deleted')),
                         );
+                        Navigator.pop(context);
+                        voucherProvider.fetchVoucher();
                       },
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                       child: const Text('Delete'),
