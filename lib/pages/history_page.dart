@@ -230,7 +230,7 @@ class HistoryPage extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(
                 children: [
-                  Image.asset(
+                  Image.network(
                     product.imageUrl,  // 这里已经正确获取了 imageUrl
                     width: 50,
                     height: 50,

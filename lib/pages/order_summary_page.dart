@@ -291,7 +291,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.asset(
+            child: Image.network(
               item.product.imageUrl,
               width: 60,
               height: 60,
