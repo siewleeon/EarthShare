@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:second_hand_shop/pages/Product/post_page.dart';
+import 'package:second_hand_shop/providers/voucher_provider.dart';
 import 'providers/point_provider.dart'; 
 import 'pages/home_page.dart';
 import 'profile.dart';  
@@ -14,6 +15,10 @@ import 'providers/product_provider.dart';
 import 'providers/transaction_provider.dart';
 import 'adminLoginPage.dart';
 import 'adminProfile.dart';
+import 'Manage/manageVoucherList.dart';
+import 'Manage/manageUserList.dart';
+import 'Manage/manageProductsList.dart';
+import 'Manage/salesReport.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -42,12 +47,15 @@ class MainApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (ctx) => PointProvider(),
         ),
+        ChangeNotifierProvider(
+          create: (ctx) => VoucherProvider(),
+        )
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
         title: 'EarthShare',
         initialRoute: '/emailLogin',
-        routes: {  
+        routes: {
           '/home': (context) => const HomePage(),
           '/history': (context) => const HistoryPage(),
           '/post': (context) => const PostPage(),
@@ -57,6 +65,7 @@ class MainApp extends StatelessWidget {
           '/phoneLogin': (context) => const PhoneLoginPage(),
           '/adminLogin': (context) => const AdminLoginPage(),
           '/adminPage': (context) => const AdminProfile(),
+          '/manageVoucherPage': (context) => const ManageVoucherList(),
         },
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
