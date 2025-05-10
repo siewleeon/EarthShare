@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:second_hand_shop/accountSetting.dart';
+import 'package:second_hand_shop/pages/Product/YourStoragePage.dart';
 import 'package:second_hand_shop/pages/contactUs_page.dart';
 import 'package:second_hand_shop/pages/points_page.dart';
 import './edit_profile.dart';
@@ -121,11 +122,20 @@ class _ProfilePageState extends State<ProfilePage> {
                   buildFeatureButton(
                     label: "My Post",
                     icon: Icons.post_add,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => YourStorePage(currentUserId : userId),
+                        ),
+                      );
+                    },
                   ),
                   buildFeatureButton(
                     label: "History",
                     icon: Icons.lock_clock,
                     iconBgColor: Colors.grey,
+                    // 可以加跳转逻辑
                   ),
                 ]),
 

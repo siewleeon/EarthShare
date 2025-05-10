@@ -138,6 +138,7 @@ class _PostPageState extends State<PostPage> {
 
     String sellerID = data['userId'];
 
+
     int Condition = 0;
 
     if (name.isEmpty || _images.isEmpty) {

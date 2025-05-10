@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String _searchQuery = '';
   String _selectedCategory = 'All';
+  String userId = '';
 
 
 
@@ -28,6 +30,22 @@ class _HomePageState extends State<HomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ProductProvider>(context, listen: false).fetchProducts();
     });
+  }
+
+  void _loadUserProfile() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    final UID = currentUser.uid;
+
+    DocumentSnapshot doc =
+    await FirebaseFirestore.instance.collection('Users').doc(UID).get();
+    if (doc.exists) {
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+      setState(() {
+        userId=data['userId'] ?? '';
+      });
+    }
   }
 
   Widget _buildHeader() {
@@ -94,6 +112,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    _loadUserProfile();
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -301,14 +320,14 @@ class _HomePageState extends State<HomePage> {
           );
         }
 
-        final currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
         final products = productProvider.products.where((product) {
           final nameMatch = product.name.toLowerCase().contains(_searchQuery);
           final categoryMatch = _selectedCategory == 'All' || product.productCategory == _selectedCategory;
-          final notOwnedByUser = product.sellerId != currentUserId;
+          final notOwnedByUser = product.sellerId != userId;
           return nameMatch && categoryMatch && notOwnedByUser;
         }).toList();
+
 
         if (products.isEmpty) {
           return const Center(

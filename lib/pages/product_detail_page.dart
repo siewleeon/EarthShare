@@ -6,6 +6,7 @@ import '../widgets/bottom_nav_bar.dart';
 import '../providers/cart_provider.dart';
 import '../providers/product_provider.dart';  // 添加这行
 import 'cart_page.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class ProductDetailPage extends StatelessWidget {
   final String productId;  // 改为接收 productId
@@ -172,7 +173,11 @@ class ProductDetailPage extends StatelessWidget {
     );
   }
 
+
+
   Widget _buildProductImage(Product product) {
+    final PageController _pageController = PageController();
+
     return Stack(
       children: [
         Container(
@@ -181,10 +186,12 @@ class ProductDetailPage extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.purple[100],
           ),
-          child: PageView(
-            children: [
-              Image.network(
-                product.imageUrl,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: product.imageId.length,
+            itemBuilder: (context, index) {
+              return Image.network(
+                product.imageId[index],
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
                   return const Center(child: Icon(Icons.broken_image));
@@ -194,10 +201,30 @@ class ProductDetailPage extends StatelessWidget {
                       ? child
                       : const Center(child: CircularProgressIndicator());
                 },
-              ),
-            ],
+              );
+            },
           ),
         ),
+
+        // 小圆点指示器
+        Positioned(
+          bottom: 16,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: SmoothPageIndicator(
+              controller: _pageController,
+              count: product.imageId.length,
+              effect: WormEffect(
+                dotHeight: 10,
+                dotWidth: 10,
+                activeDotColor: Colors.white,
+                dotColor: Colors.white.withOpacity(0.4),
+              ),
+            ),
+          ),
+        ),
+
         Positioned(
           top: 16,
           right: 16,
@@ -220,9 +247,10 @@ class ProductDetailPage extends StatelessWidget {
             ),
           ),
         ),
+
         const Positioned(
           left: 16,
-          bottom: 16,
+          bottom: 60, // 为了不被圆点覆盖
           child: Text(
             'x1',
             style: TextStyle(
@@ -235,6 +263,8 @@ class ProductDetailPage extends StatelessWidget {
       ],
     );
   }
+
+
 
   Widget _buildProductInfo(Product product) {
     return Padding(
@@ -293,7 +323,7 @@ class ProductDetailPage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Post Date: ${product.editTime}',
+            'Post Edit: ${product.editTime}',
             style: TextStyle(
               color: Colors.grey[600],
               fontSize: 14,
@@ -405,6 +435,7 @@ class ProductDetailPage extends StatelessWidget {
         fontSize: 14,
       ),
     );
+
   }
 
   void _showAddToCartSuccess(BuildContext context) {
