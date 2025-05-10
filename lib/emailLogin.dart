@@ -22,8 +22,6 @@ class _LoginPageState extends State<EmailLoginPage> {
     setState(() {
       _isLoading = true;
     });
-    // testing
-    Navigator.pushReplacementNamed(context, '/home'); // or your home route
 
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -36,7 +34,7 @@ class _LoginPageState extends State<EmailLoginPage> {
       );
 
 
-      Navigator.pushReplacementNamed(context, '/home'); // or your home route
+      Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Login failed: ${e.message} (code: ${e.code})')),
@@ -157,7 +155,7 @@ class _LoginPageState extends State<EmailLoginPage> {
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, '/register'); // 或者用 push(MaterialPageRoute(...))
+                            Navigator.pushNamed(context, '/register');
                           },
                           child: const Text(
                             'Register here',

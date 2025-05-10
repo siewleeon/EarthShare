@@ -55,7 +55,7 @@ class MainApp extends StatelessWidget {
           '/profile': (context) => const ProfilePage(),
           '/register': (context) => const RegisterPage(),
           '/emailLogin': (context) => const EmailLoginPage(),
-          '/phoneLogin': (context) => const PhoneLoginPage(),
+          '/phoneLogin': (context) => PhoneLoginPage(),
         },
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
