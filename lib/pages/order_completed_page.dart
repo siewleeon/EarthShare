@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/point_provider.dart';
+import '../providers/product_provider.dart';
 import '../models/point.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -309,6 +310,16 @@ class OrderCompletedPage extends StatelessWidget {
     final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
     final transactions = transactionProvider.transactions;
     final pointsEarned = transactions.isNotEmpty ? (transactions.first.totalAmount * 10).round() : 0;
+    
+    // 更新产品库存
+    if (transactions.isNotEmpty) {
+      final productProvider = Provider.of<ProductProvider>(context, listen: false);
+      final items = transactions.first.items;
+      
+      for (var item in items) {
+        await productProvider.updateProductQuantity(item.id, item.quantity);
+      }
+    }
     
     // 检查最新积分记录的 is_increase
     final displayPoints = pointsQuery.docs.isNotEmpty && 
