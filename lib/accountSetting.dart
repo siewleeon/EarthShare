@@ -76,7 +76,7 @@ class _SettingsPageState extends State<SettingsPage> {
           SafeArea(
             child: Column(
               children: [
-
+                const SizedBox(height: 30),
                 _buildSessionTile(
                   icon: Icons.account_balance_wallet_outlined,
                   title: 'Bank Accounts / Cards',

@@ -1,121 +1,182 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class PhoneLoginPage extends StatefulWidget {
-  const PhoneLoginPage({Key? key}) : super(key: key);
+import 'emailForgotPassword.dart';
 
+class PhoneLoginPage extends StatefulWidget {
   @override
   _PhoneLoginPageState createState() => _PhoneLoginPageState();
 }
 
 class _PhoneLoginPageState extends State<PhoneLoginPage> {
-  final phoneController = TextEditingController();
-  final otpController = TextEditingController();
-  String? verificationId;
-  bool codeSent = false;
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isLoading = false;
 
-  Future<void> verifyPhoneNumber() async {
-    await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: phoneController.text.trim(),
-      verificationCompleted: (PhoneAuthCredential credential) async {
+  Future<void> loginWithPhoneAndPassword() async {
+    final phone = phoneController.text.trim();
+    final password = passwordController.text.trim();
 
-        await FirebaseAuth.instance.signInWithCredential(credential);
-        await _checkAndCreateUser();
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Verification failed: ${e.message}")),
-        );
-      },
-      codeSent: (String verId, int? resendToken) {
-        setState(() {
-          verificationId = verId;
-          codeSent = true;
-        });
-      },
-      codeAutoRetrievalTimeout: (String verId) {
-        verificationId = verId;
-      },
-    );
-  }
+    if (phone.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please enter phone and password.")),
+      );
+      return;
+    }
 
-  Future<void> signInWithOtp() async {
+    setState(() => isLoading = true);
+
     try {
-      PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: verificationId!,
-        smsCode: otpController.text.trim(),
+      // 查找 Firestore 中对应手机号的用户
+      final query = await FirebaseFirestore.instance
+          .collection('Users')
+          .where('phone', isEqualTo: phone)
+          .limit(1)
+          .get();
+
+      if (query.docs.isEmpty) {
+        throw Exception('Phone number not found.');
+      }
+
+      final email = query.docs.first['email'];
+
+      // 使用 email 和 password 登录 Firebase Auth
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
       );
 
-      await FirebaseAuth.instance.signInWithCredential(credential);
-      await _checkAndCreateUser();
+      // 登录成功，跳转到首页
+      Navigator.pushReplacementNamed(context, '/home');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login failed: $e")),
+        SnackBar(content: Text("Login failed: ${e.toString()}")),
       );
-    }
-  }
-
-  Future<void> _checkAndCreateUser() async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-    final userDoc = await FirebaseFirestore.instance.collection('Users').doc(uid).get();
-
-    if (!userDoc.exists) {
-      await FirebaseFirestore.instance.collection('Users').doc(uid).set({
-        'userId': await _generateNewUserId(),
-        'name': '',
-        'phone': phoneController.text.trim(),
-        'email': '',
-        'address': '',
-        'profile_Picture': 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
-      });
-    }
-
-    Navigator.pushReplacementNamed(context, '/home'); // 登录成功跳转页面
-  }
-
-  Future<String> _generateNewUserId() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('Users')
-        .orderBy('userId', descending: true)
-        .limit(1)
-        .get();
-
-    if (snapshot.docs.isEmpty) {
-      return 'U0001';
-    } else {
-      final lastId = snapshot.docs.first['userId'].toString();
-      final number = int.parse(lastId.substring(1));
-      return 'U${(number + 1).toString().padLeft(4, '0')}';
+    } finally {
+      setState(() => isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Phone Login")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: phoneController,
-              decoration: const InputDecoration(labelText: 'Phone Number'),
-              keyboardType: TextInputType.phone,
+      body: Stack(
+
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/mobileLogin_background.png', // Use the same background image as in emailLogin
+              fit: BoxFit.cover,
             ),
-            if (codeSent)
-              TextField(
-                controller: otpController,
-                decoration: const InputDecoration(labelText: 'Enter OTP'),
+
+          ),
+          Center(
+
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: phoneController,
+                    decoration: _inputDecoration("Phone Number"), // Same input decoration style
+                    keyboardType: TextInputType.phone,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: _inputDecoration("Password"), // Same input decoration style
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/emailLogin');
+                        },
+                        child: const Text(
+                          "Other ways to sign in",
+                          style: TextStyle(
+                            color: Colors.blueAccent,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
+                          );
+                        },
+                        child: const Text(
+                          "Forgot password?",
+                          style: TextStyle(
+                            color: Colors.blueAccent,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: isLoading ? null : loginWithPhoneAndPassword,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.lightGreenAccent[100],
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                    ),
+                    child: isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('Login'),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Don't have an account?",
+                        style: TextStyle(color: Colors.black54),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/register');
+                        },
+                        child: const Text(
+                          'Register here',
+                          style: TextStyle(
+                            color: Colors.blueAccent,
+                            decoration: TextDecoration.underline,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: codeSent ? signInWithOtp : verifyPhoneNumber,
-              child: Text(codeSent ? "Login" : "Send OTP"),
-            )
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    );
+  }
+
 }
