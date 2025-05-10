@@ -146,6 +146,31 @@ class _LoginPageState extends State<EmailLoginPage> {
                       )
                           : const Text('Login'),
                     ),
+                    const SizedBox(height: 16),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Don't have an account?",
+                          style: TextStyle(color: Colors.black54),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/register'); // 或者用 push(MaterialPageRoute(...))
+                          },
+                          child: const Text(
+                            'Register here',
+                            style: TextStyle(
+                              color: Colors.blueAccent,
+                              decoration: TextDecoration.underline,
+                                fontWeight: FontWeight.bold
+                            ),
+
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),

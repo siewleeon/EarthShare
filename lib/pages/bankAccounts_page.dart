@@ -49,7 +49,7 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
   }
 
   Future<void> _loadAccounts() async {
-    final accounts = await dbHelper.getBankAccountsByUserID(userID);  // Fetch bank accounts based on userID
+    final accounts = await dbHelper.getBankAccountsByUserID(userID);
     setState(() {
       _bankAccounts = accounts;
     });
@@ -59,7 +59,7 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
     try {
       if (_formKey.currentState!.validate()) {
         final data = {
-          'userID': userID,  // Ensure this is set properly
+          'userID': userID,
           'bankName': _bankNameController.text.trim(),
           'cardNumber': _cardNumberController.text.trim(),
           'cardHolder': _cardHolderController.text.trim(),
@@ -85,7 +85,7 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
     } catch (e, stack) {
       print('Error during form submission: $e');
       print('Stack trace: $stack');
-      // Show error message
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to bind bank account. Please try again.')),
       );
@@ -261,70 +261,94 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
               fit: BoxFit.cover,
             ),
           ),
-          // Display Add Button if no bank accounts
-          if (_bankAccounts.isEmpty)
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Add new card / bank account',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                  const SizedBox(height: 16),
-                  GestureDetector(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+
+                // 添加账户按钮
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: GestureDetector(
                     onTap: _showAddCardDialog,
                     child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 32),
-                      height: 120,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
+                        color: Color(0xFFe0ffe0), // 柔和绿色
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 6,
+                            color: Colors.black12,
+                            blurRadius: 8,
                             offset: Offset(2, 4),
                           ),
                         ],
                       ),
-                      child: const Center(
-                        child: Icon(Icons.add, size: 40, color: Colors.black54),
+                      child: Row(
+                        children: [
+                          Icon(Icons.add_circle_outline, size: 30, color: Colors.green[800]),
+                          const SizedBox(width: 12),
+                          Text(
+                            "Add New Bank Account/Card",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.green[900],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
-            )
-          // Display Bank Accounts if any exist
-          else
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    color: Colors.lightBlueAccent,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: const Text(
-                      'Current Bank Account & Card',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(height: 24),
+
+                // 如果有银行账户才显示列表
+                if (_bankAccounts.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Current Bank Account & Card',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black87,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Divider(thickness: 1.2),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Text('Credit Card / Debit Card',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                   const SizedBox(height: 8),
                   Expanded(
                     child: ListView.builder(
                       itemCount: _bankAccounts.length,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemBuilder: (context, index) {
                         return _buildCardTile(_bankAccounts[index]);
                       },
                     ),
                   ),
-                ],
-              ),
+                ] else
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        'No bank accounts added yet.',
+                        style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                      ),
+                    ),
+                  ),
+              ],
             ),
+
+          ),
         ],
       ),
     );
