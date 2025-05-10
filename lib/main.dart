@@ -46,7 +46,7 @@ class MainApp extends StatelessWidget {
       child: MaterialApp(
         navigatorKey: navigatorKey,
         title: 'EarthShare',
-        initialRoute: '/home',
+        initialRoute: '/register',
         routes: {  
           '/home': (context) => const HomePage(),
           '/history': (context) => const HistoryPage(),
@@ -54,6 +54,7 @@ class MainApp extends StatelessWidget {
           '/register': (context) => const RegisterPage(),
           '/emailLogin': (context) => const EmailLoginPage(),
           '/phoneLogin': (context) => const PhoneLoginPage(),
+
         },
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),

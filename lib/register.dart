@@ -1,8 +1,6 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -17,7 +15,6 @@ class _RegisterPageState extends State<RegisterPage> {
   late TextEditingController nameController;
   late TextEditingController phoneController;
   late TextEditingController emailController;
-  late TextEditingController addressController;
   late TextEditingController passwordController;
   late TextEditingController confirmPasswordController;
   String avatarUrl = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
@@ -28,7 +25,6 @@ class _RegisterPageState extends State<RegisterPage> {
     nameController = TextEditingController();
     phoneController = TextEditingController();
     emailController = TextEditingController();
-    addressController = TextEditingController();
     passwordController = TextEditingController();
     confirmPasswordController = TextEditingController();
   }
@@ -50,12 +46,31 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
+  String checkPasswordStrength(String password) {
+    if (password.length < 6) return "Too short";
+    bool hasUpper = password.contains(RegExp(r'[A-Z]'));
+    bool hasLower = password.contains(RegExp(r'[a-z]'));
+    bool hasDigit = password.contains(RegExp(r'[0-9]'));
+    bool hasSpecial = password.contains(RegExp(r'[!@#\$&*~]'));
+
+    int strength = [hasUpper, hasLower, hasDigit, hasSpecial].where((e) => e).length;
+    switch (strength) {
+      case 4:
+        return "Strong";
+      case 3:
+        return "Medium";
+      case 2:
+        return "Weak";
+      default:
+        return "Very weak";
+    }
+  }
+
   @override
   void dispose() {
     nameController.dispose();
     phoneController.dispose();
     emailController.dispose();
-    addressController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
     super.dispose();
@@ -93,12 +108,11 @@ class _RegisterPageState extends State<RegisterPage> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      _buildTextField('Full Name',controllerName: nameController),
-                      _buildTextField('Address',controllerName: addressController),
-                      _buildTextField('Phone Number',controllerName: phoneController),
-                      _buildTextField('Email Address',controllerName: emailController),
-                      _buildTextField('Password', isObscure: true,controllerName: passwordController),
-                      _buildTextField('Confirm Password', isObscure: true,controllerName: confirmPasswordController),
+                      _buildTextField('Full Name', controllerName: nameController),
+                      _buildTextField('Phone Number', controllerName: phoneController),
+                      _buildTextField('Email Address', controllerName: emailController),
+                      _buildPasswordField('Password'),
+                      _buildTextField('Confirm Password', isObscure: true, controllerName: confirmPasswordController),
                       const SizedBox(height: 16),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,14 +155,12 @@ class _RegisterPageState extends State<RegisterPage> {
                         onPressed: () async {
                           if (_formKey.currentState!.validate() && agreeToTerms) {
                             try {
-
                               final credential = await FirebaseAuth.instance
                                   .createUserWithEmailAndPassword(
                                   email: emailController.text.trim(),
                                   password: passwordController.text.trim());
 
                               final userId = await _generateNewUserId();
-
 
                               await FirebaseFirestore.instance
                                   .collection('Users')
@@ -158,7 +170,6 @@ class _RegisterPageState extends State<RegisterPage> {
                                 'name': nameController.text.trim(),
                                 'phone': phoneController.text.trim(),
                                 'email': emailController.text.trim(),
-                                'address': addressController.text.trim(),
                                 'profile_Picture': avatarUrl,
                               });
 
@@ -188,15 +199,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
                           backgroundColor: Colors.lightGreenAccent,
-
                           shape: RoundedRectangleBorder(
-
                             borderRadius: BorderRadius.circular(12),
-
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 16),
                       TextButton(
                         onPressed: () {
@@ -221,7 +228,7 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildTextField(String label,{bool isObscure = false,required TextEditingController controllerName} ){
+  Widget _buildTextField(String label, {bool isObscure = false, required TextEditingController controllerName}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
@@ -246,6 +253,46 @@ class _RegisterPageState extends State<RegisterPage> {
               }
               return null;
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPasswordField(String label) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+          const SizedBox(height: 4),
+          TextFormField(
+            obscureText: true,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.blue[50],
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            controller: passwordController,
+            validator: (value) {
+              String passwordStrength = checkPasswordStrength(value ?? '');
+              if (value == null || value.isEmpty) {
+                return 'Please enter a password';
+              } else if (passwordStrength == 'Too short') {
+                return 'Password is too short';
+              } else {
+                return null;
+              }
+            },
+          ),
+          const SizedBox(height: 8),
+          Text(
+            checkPasswordStrength(passwordController.text),
+            style: TextStyle(color: Colors.grey),
           ),
         ],
       ),
