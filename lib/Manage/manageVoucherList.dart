@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/voucher_provider.dart';
+import 'voucher_detail_page.dart';
+import 'add_voucher_page.dart';
 
 class ManageVoucherList extends StatefulWidget {
   const ManageVoucherList({super.key});
@@ -94,7 +96,12 @@ class _ListPageState extends State<ManageVoucherList> {
     return Builder(
       builder: (context) => GestureDetector(
         onTap: () {
-          // todo add a voucher function
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddVoucherPage(),
+            ),
+          );
         },
         child: Container(
           width: 44,
@@ -161,7 +168,12 @@ class _ListPageState extends State<ManageVoucherList> {
                 ),
                 trailing: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/voucherDetail', arguments: voucher);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => VoucherDetailPage(voucher: voucher),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
                   child: const Text('Detail', style: TextStyle(color: Colors.white)),

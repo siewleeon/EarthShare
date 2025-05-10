@@ -51,11 +51,11 @@ class Voucher {
   {
     return {
           'voucher_ID':id,
-          'points':points,
+          'point':points,
           'discount': discount,
           'description': description,
           'total': total,
-          'expired_date': expired_date.toIso8601String(),
+          'expired_date': Timestamp.fromDate(expired_date),
     };
   }
 }

@@ -49,6 +49,11 @@ class VoucherProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // Check if voucher_ID is already taken
+      if (_vouchers.any((v) => v.id == voucher.id)) {
+        throw Exception('Voucher ID ${voucher.id} is already taken');
+      }
+
       final voucherID = await _voucherRepository.addVoucher(voucher);
       if (voucherID != null) {
         final newVoucher = voucher.copyWith(id: voucherID);
