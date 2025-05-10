@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AdminLoginPage extends StatefulWidget {
@@ -17,6 +16,8 @@ class _LoginPageState extends State<AdminLoginPage> {
 
   @override
   void dispose() {
+    _userNameController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -94,6 +95,17 @@ class _LoginPageState extends State<AdminLoginPage> {
                     ),
                   ),
                   child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Login'),
+                ),
+                Row(
+                  children: [
+                    TextButton(onPressed: () {
+                      Navigator.pushNamed(context, '/emailLogin');
+                    },
+                      child: const Text("email login",style: TextStyle(color: Colors.blueAccent,
+                          decoration: TextDecoration.underline),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
