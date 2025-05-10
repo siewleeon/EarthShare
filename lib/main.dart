@@ -5,7 +5,6 @@ import 'package:second_hand_shop/pages/Product/post_page.dart';
 import 'mainLogin.dart';
 import 'providers/point_provider.dart';
 import 'package:second_hand_shop/providers/voucher_provider.dart';
-import 'providers/point_provider.dart';
 import 'pages/home_page.dart';
 import 'profile.dart';  
 import 'register.dart';  
@@ -15,12 +14,6 @@ import 'pages/history_page.dart';
 import 'providers/cart_provider.dart';
 import 'providers/product_provider.dart';
 import 'providers/transaction_provider.dart';
-import 'adminLoginPage.dart';
-import 'adminProfile.dart';
-import 'Manage/manageVoucherList.dart';
-import 'Manage/manageUserList.dart';
-import 'Manage/manageProductsList.dart';
-import 'Manage/salesReport.dart';
 import 'adminLoginPage.dart';
 import 'adminProfile.dart';
 import 'Manage/manageVoucherList.dart';
@@ -57,10 +50,7 @@ class MainApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (ctx) => VoucherProvider(),
-        )
-        ChangeNotifierProvider(
-          create: (ctx) => VoucherProvider(),
-        )
+        ),
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
