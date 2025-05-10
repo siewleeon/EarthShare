@@ -132,11 +132,12 @@ class _LoginPageState extends State<EmailLoginPage> {
                     ElevatedButton(
                       onPressed: _isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 60, vertical: 15),
+                        backgroundColor: Colors.lightGreenAccent[100],
+                        foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(30),
                         ),
+                        padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
                       ),
                       child: _isLoading
                           ? const CircularProgressIndicator(
