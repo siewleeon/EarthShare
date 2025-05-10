@@ -11,6 +11,30 @@ class BankAccountsPage extends StatefulWidget {
 }
 
 class _BankAccountsPageState extends State<BankAccountsPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Bank Accounts'),
+        backgroundColor: Colors.green,
+      ),
+      body: _bankAccounts.isEmpty
+          ? const Center(
+              child: Text('No bank accounts added yet'),
+            )
+          : ListView.builder(
+              itemCount: _bankAccounts.length,
+              itemBuilder: (context, index) {
+                return _buildCardTile(_bankAccounts[index]);
+              },
+            ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddCardDialog,
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
   final dbHelper = UserDataDatabaseHelper();
   List<Map<String, dynamic>> _bankAccounts = [];
   String userID = '';
@@ -19,6 +43,7 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
   final _cardNumberController = TextEditingController();
   final _cardHolderController = TextEditingController();
   final _expiryDateController = TextEditingController();
+  final _cvvController = TextEditingController();
 
   @override
   void initState() {
@@ -49,7 +74,7 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
   }
 
   Future<void> _loadAccounts() async {
-    final accounts = await dbHelper.getBankAccountsByUserID(userID);  // Fetch bank accounts based on userID
+    final accounts = await dbHelper.getBankAccountsByUserID(userID);
     setState(() {
       _bankAccounts = accounts;
     });
@@ -59,17 +84,18 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
     try {
       if (_formKey.currentState!.validate()) {
         final data = {
-          'userID': userID,  // Ensure this is set properly
+          'userID': userID,
           'bankName': _bankNameController.text.trim(),
           'cardNumber': _cardNumberController.text.trim(),
           'cardHolder': _cardHolderController.text.trim(),
           'expiryDate': _expiryDateController.text.trim(),
+          'cvv': _cvvController.text.trim(),
         };
 
         // Insert the new bank account into the database
         final result = await dbHelper.insertBankAccount(data);
 
-        if (result != null) {
+        if (result != -1) {
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Bank account successfully bound!')),
@@ -81,11 +107,16 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
           // Close the dialog
           Navigator.pop(context);
         }
+        else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to bind bank account.')),
+          );
+        }
       }
     } catch (e, stack) {
       print('Error during form submission: $e');
       print('Stack trace: $stack');
-      // Show error message
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to bind bank account. Please try again.')),
       );
@@ -132,6 +163,16 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
                   validator: (value) => value == null || !RegExp(r'^\d{2}/\d{2}$').hasMatch(value)
                       ? 'Enter expiry date like 12/25'
                       : null,
+                ),
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: _cvvController,
+                  decoration: const InputDecoration(labelText: 'CVV', border: OutlineInputBorder()),
+                  keyboardType: TextInputType.number,
+                  obscureText: true, // 安全考虑，隐藏 CVV
+                  maxLength: 4, // 大多数卡的 CVV 是 3-4 位
+                  validator: (value) => value == null || value.length < 3 ? 'Enter a valid CVV' : null,
                 ),
                 const SizedBox(height: 24),
 
@@ -195,6 +236,7 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
               children: [
                 Text(account['bankName'], style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(_obscureCard(account['cardNumber']), style: const TextStyle(fontSize: 12)),
+                // 不显示 CVV，出于安全考虑
               ],
             ),
           ),
@@ -202,129 +244,6 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
             icon: const Icon(Icons.delete, color: Colors.red),
             onPressed: () => _confirmDelete(account['id']),
           ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(80),
-        child: AppBar(
-          backgroundColor: const Color(0xFFCCFF66),
-          elevation: 0,
-          centerTitle: true,
-          title: const Text(
-            'Bank Accounts/Cards',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          leading: Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 4,
-                    offset: Offset(2, 2),
-                  ),
-                ],
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-          ),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(30),
-              bottomRight: Radius.circular(30),
-            ),
-          ),
-        ),
-      ),
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/default_background.png',
-              fit: BoxFit.cover,
-            ),
-          ),
-          // Display Add Button if no bank accounts
-          if (_bankAccounts.isEmpty)
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Add new card / bank account',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                  const SizedBox(height: 16),
-                  GestureDetector(
-                    onTap: _showAddCardDialog,
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 32),
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 6,
-                            offset: Offset(2, 4),
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.add, size: 40, color: Colors.black54),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          // Display Bank Accounts if any exist
-          else
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    color: Colors.lightBlueAccent,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: const Text(
-                      'Current Bank Account & Card',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text('Credit Card / Debit Card',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: _bankAccounts.length,
-                      itemBuilder: (context, index) {
-                        return _buildCardTile(_bankAccounts[index]);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
     );

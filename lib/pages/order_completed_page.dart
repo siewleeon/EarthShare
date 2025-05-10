@@ -5,12 +5,13 @@ import '../providers/transaction_provider.dart';
 import '../providers/point_provider.dart';
 import '../models/point.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
+import 'package:firebase_auth/firebase_auth.dart';
 
 class OrderCompletedPage extends StatelessWidget {
   final String paymentMethod;
   final String shippingAddress;
   final DateTime purchaseTime;
-
+  
   const OrderCompletedPage({
     super.key,
     required this.paymentMethod,
@@ -21,9 +22,23 @@ class OrderCompletedPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 在页面构建时加载交易历史
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
-      transactionProvider.loadUserTransactions('user1');
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) return;
+
+      final UID = currentUser.uid;
+      final doc = await firestore.FirebaseFirestore.instance
+          .collection('Users')
+          .doc(UID)
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        final userId = data['userId'] ?? '';
+        
+        final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
+        transactionProvider.loadUserTransactions(userId);
+      }
     });
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -268,28 +283,38 @@ class OrderCompletedPage extends StatelessWidget {
   }
 
   void _showPointRewardDialog(BuildContext context) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    final UID = currentUser.uid;
+    final doc = await firestore.FirebaseFirestore.instance
+        .collection('Users')
+        .doc(UID)
+        .get();
+
+    if (!doc.exists) return;
+
+    final data = doc.data() as Map<String, dynamic>;
+    final userId = data['userId'] ?? '';
+
+    // 获取最新的积分记录
+    final pointsQuery = await firestore.FirebaseFirestore.instance
+        .collection('points')
+        .where('user_ID', isEqualTo: userId)
+        .orderBy('created_at', descending: true)
+        .limit(1)
+        .get();
+
+    // 获取交易金额
     final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
-    final pointProvider = Provider.of<PointProvider>(context, listen: false);
     final transactions = transactionProvider.transactions;
     final pointsEarned = transactions.isNotEmpty ? (transactions.first.totalAmount * 10).round() : 0;
     
-    // 生成新的积分ID
-    final timestamp = firestore.Timestamp.now();
-    final pointId = 'P${timestamp.seconds}${timestamp.nanoseconds}';
-    
-    // 创建新的积分记录
-    final point = Point(
-      pointId: pointId,
-      userId: 'user1', // 使用当前用户ID
-      points: pointsEarned,
-      isIncrease: true,
-      createdAt: DateTime.now(),
-      description: 'purchase point',
-    );
-    
-    // 添加积分
-    await pointProvider.addPoints(point);
-    
+    // 检查最新积分记录的 is_increase
+    final displayPoints = pointsQuery.docs.isNotEmpty && 
+                        pointsQuery.docs.first.data()['is_increase'] == true ? 
+                        pointsEarned : 0;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -315,7 +340,7 @@ class OrderCompletedPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              '+$pointsEarned points',
+              '+$displayPoints points',
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -353,6 +378,7 @@ class OrderCompletedPage extends StatelessWidget {
 
   Widget _buildBottomNavBar() {
     return Container(
+      width: double.infinity,  // 添加这行确保宽度填充
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -365,15 +391,15 @@ class OrderCompletedPage extends StatelessWidget {
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16), // 减小水平内边距
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly, // 改为 spaceEvenly
             children: [
-              _buildNavItem(Icons.home_outlined, 'Home', true),
-              _buildNavItem(Icons.search, 'Search', false),
-              _buildCenterNavItem(),
-              _buildNavItem(Icons.history, 'History', false),
-              _buildNavItem(Icons.person_outline, 'Profile', false),
+              Flexible(child: _buildNavItem(Icons.home_outlined, 'Home', true)),
+              Flexible(child: _buildNavItem(Icons.search, 'Search', false)),
+              Flexible(child: _buildCenterNavItem()),
+              Flexible(child: _buildNavItem(Icons.history, 'History', false)),
+              Flexible(child: _buildNavItem(Icons.person_outline, 'Profile', false)),
             ],
           ),
         ),

@@ -257,7 +257,7 @@ class HomePage extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            product.category,
+                            product.productCategory,
                             style: const TextStyle(fontSize: 12, color: Colors.grey),
                           ),
                         ],

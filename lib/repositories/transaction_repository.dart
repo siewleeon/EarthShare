@@ -53,11 +53,10 @@ class TransactionRepository {
               name: '',  // 这些字段将从产品集合中获取
               price: (item['price'] ?? 0.0).toDouble(),
               imageUrl: '',
-              category: '',
+              productCategory: '',
               uploadTime: DateTime.now(),  // 默认当前时间
               editTime: DateTime.now(),    // 默认当前时间
               quantity: 0,                 // 默认数量
-              productCategory: [],         // 空分类列表
               sellerId: '',               // 空卖家ID
               imageId: [],                // 空图片ID列表
               description: '',            // 空描述

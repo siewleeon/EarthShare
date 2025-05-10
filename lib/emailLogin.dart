@@ -22,8 +22,6 @@ class _LoginPageState extends State<EmailLoginPage> {
     setState(() {
       _isLoading = true;
     });
-    // testing
-    Navigator.pushReplacementNamed(context, '/home'); // or your home route
 
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -36,7 +34,7 @@ class _LoginPageState extends State<EmailLoginPage> {
       );
 
 
-      Navigator.pushReplacementNamed(context, '/home'); // or your home route
+      Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Login failed: ${e.message} (code: ${e.code})')),
@@ -134,17 +132,43 @@ class _LoginPageState extends State<EmailLoginPage> {
                     ElevatedButton(
                       onPressed: _isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 60, vertical: 15),
+                        backgroundColor: Colors.lightGreenAccent[100],
+                        foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(30),
                         ),
+                        padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
                       ),
                       child: _isLoading
                           ? const CircularProgressIndicator(
                         color: Colors.white,
                       )
                           : const Text('Login'),
+                    ),
+                    const SizedBox(height: 16),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Don't have an account?",
+                          style: TextStyle(color: Colors.black54),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/register');
+                          },
+                          child: const Text(
+                            'Register here',
+                            style: TextStyle(
+                              color: Colors.blueAccent,
+                              decoration: TextDecoration.underline,
+                                fontWeight: FontWeight.bold
+                            ),
+
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

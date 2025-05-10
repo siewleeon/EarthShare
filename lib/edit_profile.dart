@@ -69,6 +69,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           .child('${widget.userUid}.jpg');
 
       print('Uploading image...');
+      await ref.putFile(_selectedImage!);
       print('Upload complete');
 
       final url = await ref.getDownloadURL();
@@ -258,7 +259,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
                       await FirebaseAuth.instance.signOut();
                       if (context.mounted) {
-                        Navigator.of(context).popUntil((route) => route.isFirst); // return to login
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                          '/login',
+                              (route) => false,
+                        );
                       }
                     } catch (e) {
                       Navigator.pop(context);

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/cart.dart';
 import 'payment_page.dart';
+import '../localStorage/UserDataDatabaseHelper.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
+import '../models/point.dart';
+import '../providers/point_provider.dart';
 
 class OrderSummaryPage extends StatefulWidget {
   const OrderSummaryPage({super.key});
@@ -15,12 +19,41 @@ class OrderSummaryPage extends StatefulWidget {
 class _OrderSummaryPageState extends State<OrderSummaryPage> {
   bool _expressShipping = false;
   final _addressController = TextEditingController();
-  List<String> _savedAddresses = [];  // 用于存储历史地址
+  List<String> _savedAddresses = [];
+  final _dbHelper = UserDataDatabaseHelper();
+  
+
+  Future<int> _getUserPoints() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return 0;
+
+    final UID = currentUser.uid;
+    final userDoc = await firestore.FirebaseFirestore.instance
+        .collection('Users')
+        .doc(UID)
+        .get();
+    
+    if (!userDoc.exists) return 0;
+    
+    final userId = userDoc.data()?['userId'];
+    if (userId == null) return 0;
+
+    // 获取最新的积分记录
+    final pointsQuery = await firestore.FirebaseFirestore.instance
+        .collection('points')
+        .where('user_ID', isEqualTo: userId)
+        .orderBy('created_at', descending: true)
+        .limit(1)
+        .get();
+
+    if (pointsQuery.docs.isEmpty) return 0;
+    return pointsQuery.docs.first.data()['points'] ?? 0;
+  }
 
   @override
   void initState() {
     super.initState();
-    _loadSavedAddresses();  // 加载保存的地址
+    _loadSavedAddresses();
   }
 
   @override
@@ -31,21 +64,17 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
 
   // 加载保存的地址
   Future<void> _loadSavedAddresses() async {
-    final prefs = await SharedPreferences.getInstance();
+    final addresses = await _dbHelper.getSavedAddresses();
     setState(() {
-      _savedAddresses = prefs.getStringList('saved_addresses') ?? [];
+      _savedAddresses = addresses;
     });
   }
 
   // 保存新地址
   Future<void> _saveAddress(String address) async {
     if (address.isNotEmpty && !_savedAddresses.contains(address)) {
-      final prefs = await SharedPreferences.getInstance();
-      final updatedAddresses = [..._savedAddresses, address];
-      await prefs.setStringList('saved_addresses', updatedAddresses);
-      setState(() {
-        _savedAddresses = updatedAddresses;
-      });
+      await _dbHelper.insertAddress(address);
+      await _loadSavedAddresses(); // 重新加载地址列表
     }
   }
 
@@ -88,14 +117,16 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                     minWidth: 16,
                     minHeight: 16,
                   ),
-                  child: const Text(
-                    '2',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                  child: Consumer<CartProvider>(
+                    builder: (context, cart, child) => Text(
+                      '${cart.itemCount}',  // 将 itemCount 转换为字符串
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
@@ -405,12 +436,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
   Future<void> _saveCurrentAddress() async {
     final address = _addressController.text.trim();
     if (address.isNotEmpty && !_savedAddresses.contains(address)) {
-      final prefs = await SharedPreferences.getInstance();
-      final updatedAddresses = [..._savedAddresses, address];
-      await prefs.setStringList('saved_addresses', updatedAddresses);
-      setState(() {
-        _savedAddresses = updatedAddresses;
-      });
+      _saveAddress(address);
     }
   }
 
@@ -442,13 +468,128 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
     );
   }
 
+  // 添加新的状态变量
+  final _voucherController = TextEditingController();
+  double _discountPercentage = 0.0;
+  int _requiredPoints = 0;
+  bool _isVoucherApplied = false;
+
+  // 添加验证优惠券的方法
+  Future<void> _validateVoucherCode(String code) async {
+    if (code.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请输入优惠券代码')),
+      );
+      return;
+    }
+
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('请先登录')),
+        );
+        return;
+      }
+
+      final UID = currentUser.uid;
+      final userDoc = await firestore.FirebaseFirestore.instance
+          .collection('Users')
+          .doc(UID)
+          .get();
+      
+      if (!userDoc.exists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('用户信息不存在')),
+        );
+        return;
+      }
+      
+      final userId = userDoc.data()?['userId'];
+      if (userId == null) return;
+
+      // 获取最新的积分记录
+      final pointsQuery = await firestore.FirebaseFirestore.instance
+          .collection('points')
+          .where('user_ID', isEqualTo: userId)
+          .orderBy('created_at', descending: true)
+          .limit(1)
+          .get();
+
+      final currentPoints = pointsQuery.docs.isEmpty ? 0 : pointsQuery.docs.first.data()['points'] ?? 0;
+
+      setState(() {
+        switch (code.toUpperCase()) {
+          case 'SAVE5':
+            if (currentPoints >= 100) {
+              _discountPercentage = 0.05;
+              _requiredPoints = 100;
+              _isVoucherApplied = true;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('5% 折扣已应用')),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('需要100积分来使用此优惠码')),
+              );
+            }
+            break;
+          case 'SAVE10':
+            if (currentPoints >= 200) {
+              setState(() {
+                _discountPercentage = 0.10;
+                _requiredPoints = 200;
+                _isVoucherApplied = true;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('10% 折扣已应用')),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('需要200积分来使用此优惠码')),
+              );
+            }
+            break;
+          case 'SAVE15':
+            if (currentPoints >= 300) {
+              setState(() {
+                _discountPercentage = 0.15;
+                _requiredPoints = 300;
+                _isVoucherApplied = true;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('15% 折扣已应用')),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('需要300积分来使用此优惠码')),
+              );
+            }
+            break;
+          default:
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('无效的优惠码')),
+            );
+        }
+      });
+    } catch (e) {
+      debugPrint('验证优惠券时出错: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('验证优惠券时出错，请稍后重试')),
+      );
+    }
+  }
+
+  // 修改支付详情计算方法
   Widget _buildPaymentDetails(CartProvider cart) {
     final productTotal = cart.totalAmount;
     final expressShipFee = _expressShipping ? 10.0 : 0.0;
     final shippingFee = 10.0;
-    final memberDiscount = productTotal * 0.1; // 10% discount
-    final salesTax = productTotal * 0.06; // 6% tax
-    final totalPayment = productTotal + expressShipFee + shippingFee - memberDiscount + salesTax;
+    
+    // 计算折扣金额
+    final voucherDiscount = _isVoucherApplied ? (productTotal * _discountPercentage) : 0.0;
+    final salesTax = (productTotal - voucherDiscount) * 0.06; // 应用折扣后再计算税
+    final totalPayment = productTotal + expressShipFee + shippingFee - voucherDiscount + salesTax;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -467,7 +608,12 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
           _buildPaymentRow('Product Total Price', productTotal),
           _buildPaymentRow('Express Ship Fee', expressShipFee),
           _buildPaymentRow('Shipping Fee', shippingFee),
-          _buildPaymentRow('Member Discount (10%)', memberDiscount, isDiscount: true),
+          // 总是显示折扣行，金额为0时也显示
+          _buildPaymentRow(
+            'Voucher Discount${_isVoucherApplied ? ' (${(_discountPercentage * 100).toInt()}%)' : ''}',
+            voucherDiscount,
+            isDiscount: true
+          ),
           _buildPaymentRow('Sales Tax (6%)', salesTax, isTax: true),
           const SizedBox(height: 8),
           _buildVoucherInput(),
@@ -477,17 +623,63 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 // 保存当前地址
                 _saveCurrentAddress();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PaymentPage(
-                      shippingAddress: _addressController.text,
+
+                // 获取当前用户ID
+                final currentUser = FirebaseAuth.instance.currentUser;
+                if (currentUser != null) {
+                  final UID = currentUser.uid;
+                  final doc = await firestore.FirebaseFirestore.instance
+                      .collection('Users')
+                      .doc(UID)
+                      .get();
+                  
+                  if (doc.exists) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final userId = data['userId'] ?? '';
+                    
+                    // 获取当前积分
+                    final currentPoints = await _getUserPoints();
+                    
+                    // 计算新的积分
+                    final points = _isVoucherApplied 
+                        ? currentPoints - _requiredPoints  // 如果使用了优惠券，减去所需积分
+                        : currentPoints + (totalPayment * 10).round();  // 否则增加购物积分
+                    
+                    // 生成新的积分ID
+                    final timestamp = firestore.Timestamp.now();
+                    final pointId = 'P${timestamp.seconds}${timestamp.nanoseconds}';
+                    
+                    // 创建积分记录
+                    final point = Point(
+                      pointId: pointId,
+                      userId: userId,
+                      points: points,
+                      description: _isVoucherApplied ? 'Points deducted for voucher' : 'Points earned from purchase',
+                      createdAt: DateTime.now(),
+                      isIncrease: !_isVoucherApplied,
+                    );
+                    
+                    // 添加积分记录
+                    final pointProvider = Provider.of<PointProvider>(context, listen: false);
+                    await pointProvider.addPoints(point);
+                  }
+                }
+
+                // 跳转到支付页面
+                if (mounted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PaymentPage(
+                        shippingAddress: _addressController.text,
+                        finalAmount: totalPayment
+                      ),
                     ),
-                  ),
-                );
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue[300],
@@ -559,41 +751,105 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
         color: Colors.grey[100],
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.card_giftcard,
-            color: Colors.blue,
-            size: 20,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              decoration: const InputDecoration(
-                hintText: 'Enter voucher code',
-                hintStyle: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
+          Row(
+            children: [
+              const Icon(
+                Icons.card_giftcard,
+                color: Colors.blue,
+                size: 20,
               ),
-              style: const TextStyle(fontSize: 14),
-            ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: _voucherController,
+                  enabled: !_isVoucherApplied,
+                  decoration: InputDecoration(
+                    hintText: _isVoucherApplied ? 'this voucher used' : 'enter voucher code',
+                    hintStyle: TextStyle(
+                      fontSize: 14,
+                      color: _isVoucherApplied ? Colors.grey : Colors.grey[600],
+                    ),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+              TextButton(
+                onPressed: _isVoucherApplied
+                    ? null
+                    : () => _validateVoucherCode(_voucherController.text),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.blue,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                ),
+                child: Text(
+                  _isVoucherApplied ? 'used' : 'apply',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: _isVoucherApplied ? Colors.grey : Colors.blue,
+                  ),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              // TODO: 实现验证优惠券逻辑
+          const SizedBox(height: 8),
+          FutureBuilder<int>(
+            future: _getUserPoints(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Text(
+                  '正在加载积分...',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                );
+              }
+              
+              if (snapshot.hasError) {
+                return const Text(
+                  '无法加载积分',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.red,
+                  ),
+                );
+              }
+
+              final points = snapshot.data ?? 0;
+              return Row(
+                children: [
+                  const Icon(
+                    Icons.stars,
+                    color: Colors.amber,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'current points: $points',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  if (_isVoucherApplied) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      '(used $_requiredPoints points)',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ],
+              );
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.blue,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-            ),
-            child: const Text(
-              'Apply',
-              style: TextStyle(fontSize: 14),
-            ),
           ),
         ],
       ),

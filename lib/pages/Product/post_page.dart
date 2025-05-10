@@ -30,7 +30,7 @@ class _PostPageState extends State<PostPage> {
   final _quantityController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  List<String> selectedCategories = [];
+  String? selectedCategory;
 
   Future<void> _pickImages() async {
     final List<XFile>? selected = await _picker.pickMultiImage();
@@ -157,7 +157,7 @@ class _PostPageState extends State<PostPage> {
       "product_Price": price,
       "product_Quantity": quantity,
       "product_Description": description,
-      "product_Category": selectedCategories,
+      "product_Category": selectedCategory ?? '',
       "product_SellerID": sellerID,
       "images": imageUrls,
       'degree_of_Newness': Condition,
@@ -177,7 +177,6 @@ class _PostPageState extends State<PostPage> {
       _priceController.clear();
       _quantityController.clear();
       _descriptionController.clear();
-      selectedCategories.clear();
     });
   }
 
@@ -235,17 +234,13 @@ class _PostPageState extends State<PostPage> {
     return Wrap(
       spacing: 8,
       children: categories.map((category) {
-        final selected = selectedCategories.contains(category);
-        return FilterChip(
+        final selected = selectedCategory == category;
+        return ChoiceChip(
           label: Text(category),
           selected: selected,
           onSelected: (value) {
             setState(() {
-              if (value) {
-                selectedCategories.add(category);
-              } else {
-                selectedCategories.remove(category);
-              }
+              selectedCategory = value ? category : null;
             });
           },
         );

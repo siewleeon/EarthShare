@@ -28,7 +28,8 @@ class UserDataDatabaseHelper {
         bankName TEXT,
         cardNumber TEXT,
         cardHolder TEXT,
-        expiryDate TEXT
+        expiryDate TEXT,
+        cvv TEXT
       );
     ''');
 
@@ -47,6 +48,14 @@ class UserDataDatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         rating INTEGER,
         comment TEXT,
+        timestamp TEXT
+      );
+    ''');
+
+    await db.execute('''
+      CREATE TABLE shipping_addresses(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        address TEXT,
         timestamp TEXT
       );
     ''');
@@ -103,5 +112,19 @@ class UserDataDatabaseHelper {
     return await db.query('feedbacks');
   }
 
+  // 插入新地址
+  Future<int> insertAddress(String address) async {
+    final db = await database;
+    return await db.insert('shipping_addresses', {
+      'address': address,
+      'timestamp': DateTime.now().toString(),
+    });
+  }
 
+  // 获取所有保存的地址
+  Future<List<String>> getSavedAddresses() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('shipping_addresses');
+    return List.generate(maps.length, (i) => maps[i]['address'] as String);
+  }
 }
