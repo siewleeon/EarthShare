@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:second_hand_shop/pages/Product/post_page.dart';
 import '../models/product.dart';
 import '../providers/cart_provider.dart';
 import '../providers/product_provider.dart';  
@@ -163,9 +164,7 @@ class HomePage extends StatelessWidget {
     return Consumer<ProductProvider>(
       builder: (context, productProvider, child) {
         if (productProvider.isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (productProvider.error != null) {
@@ -178,20 +177,19 @@ class HomePage extends StatelessWidget {
         }
 
         final products = productProvider.products;
-        
+        print('products.length = ${products.length}');
+
         if (products.isEmpty) {
-          return const Center(
-            child: Text('no product!!!!!'),
-          );
+          return const Center(child: Text('No products found.'));
         }
 
         return GridView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.75,
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
+            childAspectRatio: 0.75,
           ),
           itemCount: products.length,
           itemBuilder: (context, index) {
@@ -206,10 +204,8 @@ class HomePage extends StatelessWidget {
                 );
               },
               child: Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 clipBehavior: Clip.antiAlias,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -217,10 +213,10 @@ class HomePage extends StatelessWidget {
                       child: Stack(
                         children: [
                           Container(
+                            width: double.infinity,
                             decoration: BoxDecoration(
-                              color: Colors.grey[200],
                               image: DecorationImage(
-                                image: AssetImage(product.imageUrl),
+                                image: NetworkImage(product.imageUrl),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -229,20 +225,14 @@ class HomePage extends StatelessWidget {
                             top: 8,
                             left: 8,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: _getTagColor(product.category),
-                                borderRadius: BorderRadius.circular(10),
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                product.category,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                ),
+                                product.conditionLabel,
+                                style: const TextStyle(color: Colors.white, fontSize: 12),
                               ),
                             ),
                           ),
@@ -256,47 +246,19 @@ class HomePage extends StatelessWidget {
                         children: [
                           Text(
                             product.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            product.editTime.toString(),
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
+                            'RM ${product.price.toStringAsFixed(2)}',
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'RM ${product.price.toStringAsFixed(0)}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.shopping_cart_outlined),
-                                onPressed: () {
-                                  // 获取购物车 provider
-                                  final cart = Provider.of<CartProvider>(context, listen: false);
-                                  // 添加商品到购物车
-                                  cart.addItem(product, quantity: 1);
-                                  // 显示成功提示
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('added to cart'),
-                                      duration: Duration(seconds: 1),
-                                    ),
-                                  );
-                                },
-                                iconSize: 20,
-                              ),
-                            ],
+                          const SizedBox(height: 4),
+                          Text(
+                            product.category,
+                            style: const TextStyle(fontSize: 12, color: Colors.grey),
                           ),
                         ],
                       ),
@@ -309,6 +271,7 @@ class HomePage extends StatelessWidget {
         );
       },
     );
+
   }
 
   Color _getTagColor(String tag) {
@@ -392,24 +355,36 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildAddButton() {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: Colors.blue,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 5,
+    return Builder(
+        builder: (context) => GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const PostPage(),
           ),
-        ],
+        );
+      },
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: Colors.blue,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.withOpacity(0.3),
+              spreadRadius: 2,
+              blurRadius: 5,
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
       ),
-      child: const Icon(
-        Icons.add,
-        color: Colors.white,
-      ),
+    )
     );
   }
 }

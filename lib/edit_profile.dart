@@ -24,9 +24,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
   late TextEditingController currentPasswordController;
   late TextEditingController newPasswordController;
-  bool _showCurrentPassword = false;
-  bool _showNewPassword = false;
-  String _passwordStrength = '';
+
 
   @override
   void initState() {

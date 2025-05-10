@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:second_hand_shop/pages/Product/post_page.dart';
 import '../models/product.dart';
 import '../models/cart.dart';
 import '../providers/cart_provider.dart';
@@ -36,7 +37,12 @@ class CartPage extends StatelessWidget {
                         // TODO: 实现搜索页面导航
                         break;
                       case 2: // Post
-                        // TODO: 实现发布页面导航
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PostPage(),
+                          ),
+                        );
                         break;
                       case 3: // History
                         Navigator.push(
