@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/voucher.dart';
 import '../providers/voucher_provider.dart';
 
 class ManageVoucherList extends StatefulWidget {
@@ -10,51 +9,31 @@ class ManageVoucherList extends StatefulWidget {
   State<ManageVoucherList> createState() => _ListPageState();
 }
 
-class _ListPageState extends State<ManageVoucherList>
-{
-  // For ease of manage, page 0 is Home page, then is Manage User, Voucher, Products, Sales Report and last will be log out page
-  void changePage(int page)
-  {
-    switch(page)
-    {
+class _ListPageState extends State<ManageVoucherList> {
+
+  void changePage(int page) {
+    switch (page) {
       case 0:
-        {
-          debugPrint("home");
-          // Change page to Home(but this page already is home, so it will reload the page only)
-          Navigator.pushReplacementNamed(context, "/adminPage");
-          break;
-        }
+        debugPrint("home");
+        Navigator.pushReplacementNamed(context, "/adminPage");
+        break;
       case 1:
-        {
-          debugPrint("user");
-          // Change page to Manage User
-          break;
-        }
+        debugPrint("user");
+        break;
       case 2:
-        {
-          debugPrint("voucher");
-          // Change page to Manage Voucher
-          break;
-        }
+        debugPrint("voucher");
+        Navigator.pushReplacementNamed(context, "/manageVoucherPage");
+        break;
       case 3:
-        {
-          debugPrint("product");
-          // Change page to Manage Products
-          break;
-        }
+        debugPrint("product");
+        break;
       case 4:
-        {
-          debugPrint("report");
-          // Change page to Sales Report
-          break;
-        }
+        debugPrint("report");
+        break;
       case 5:
-        {
-          debugPrint("logout");
-          // Change page to Admin Login Page
-          Navigator.pushNamedAndRemoveUntil(context, '/adminLogin', (Route<dynamic> route) => false);
-          break;
-        }
+        debugPrint("logout");
+        Navigator.pushNamedAndRemoveUntil(context, '/adminLogin', (Route<dynamic> route) => false);
+        break;
       default:
         break;
     }
@@ -67,49 +46,44 @@ class _ListPageState extends State<ManageVoucherList>
     });
 
     return Scaffold(
-      body: SafeArea(child: Row(
-        children: [
-          Column(
-            children: [
-              _buildSearchBar(),
-              _buildAddButton(),
-            ],
-          ),
-          Expanded(child: _buildVoucherGrid()),
-          _buildBottomNavigationBar(),
-        ],
-      )),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildSearchBar(),
+            _buildAddButton(),
+            Expanded(child: _buildVoucherList()),
+          ],
+        ),
+      ),
+      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
   Widget _buildSearchBar() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.grey[200],
         borderRadius: BorderRadius.circular(25),
       ),
       child: Row(
         children: [
-          const Icon(Icons.search, color: Colors.grey),
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.grey),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Search products',
+                hintText: 'Search here',
                 border: InputBorder.none,
                 hintStyle: TextStyle(color: Colors.grey[400]),
               ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.blue[100],
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.public, color: Colors.blue),
           ),
         ],
       ),
@@ -118,38 +92,39 @@ class _ListPageState extends State<ManageVoucherList>
 
   Widget _buildAddButton() {
     return Builder(
-        builder: (context) => GestureDetector(
-          onTap: () {
-            // todo add a voucher function
-          },
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: Colors.blue,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.blue.withOpacity(0.3),
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.add,
-              color: Colors.white,
-            ),
+      builder: (context) => GestureDetector(
+        onTap: () {
+          // todo add a voucher function
+        },
+        child: Container(
+          width: 44,
+          height: 44,
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withValues(alpha: 0.3),
+                spreadRadius: 2,
+                blurRadius: 5,
+              ),
+            ],
           ),
-        )
+          child: const Icon(
+            Icons.add,
+            color: Colors.white,
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildVoucherGrid() {
+  Widget _buildVoucherList() {
     return Consumer<VoucherProvider>(
       builder: (context, voucherProvider, child) {
         if (voucherProvider.isLoading) {
-          return const Center(child:  CircularProgressIndicator(),);
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (voucherProvider.error != null) {
@@ -162,57 +137,50 @@ class _ListPageState extends State<ManageVoucherList>
         }
 
         final vouchers = voucherProvider.vouchers;
-        debugPrint('voucher.length = ${vouchers.length}');
-
         if (vouchers.isEmpty) {
           return const Center(child: Text("no voucher found"));
         }
 
-        return GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 0.75,
-            ),
-            itemCount: vouchers.length,
-            itemBuilder: (context, index){
-              final voucher = vouchers[index];
-              return GestureDetector(
-                onTap: () {
-
-                },
-                child: ListBody(
-                  children: [
-                    Column(
-                      children: [
-                        Text(
-                          voucher.id,
-                          maxLines: 2,
-                        ),
-                        Text(
-                          voucher.description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ],
+        return ListView.builder(
+          padding: const EdgeInsets.all(16.0),
+          itemCount: vouchers.length,
+          itemBuilder: (context, index) {
+            final voucher = vouchers[index];
+            return Card(
+              elevation: 2,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              child: ListTile(
+                leading: Text(
+                  voucher.id,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-              );
-            });
+                title: Text(
+                  voucher.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/voucherDetail', arguments: voucher);
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
+                  child: const Text('Detail', style: TextStyle(color: Colors.white)),
+                ),
+              ),
+            );
+          },
+        );
       },
     );
   }
 
-  Widget _buildBottomNavigationBar()
-  {
+  Widget _buildBottomNavigationBar() {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey,
+            color: Colors.grey.withValues(alpha: 0.5),
             spreadRadius: 1,
             blurRadius: 5,
           ),
@@ -223,56 +191,54 @@ class _ListPageState extends State<ManageVoucherList>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(Icons.account_circle_outlined, "Manage User", false),
-            _buildNavItem(Icons.abc, "Manage Voucher", false),
-            _buildNavItem(Icons.home, 'Home', true),
-            _buildNavItem(Icons.account_balance_outlined, "Manage Products", false),
-            _buildNavItem(Icons.insert_chart_outlined, "Sales Report", false),
+            _buildNavItem(Icons.person_outline, "User", false),
+            _buildNavItem(Icons.local_offer, "Voucher", true),
+            _buildNavItem(Icons.home, "Home", false),
+            _buildNavItem(Icons.store, "Products", false),
+            _buildNavItem(Icons.insert_chart, "Report", false),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isSelected)
-  {
+  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
     return Builder(
       builder: (context) => GestureDetector(
         onTap: () {
           switch (label) {
             case 'Home':
-              {
-                changePage(0);
-                break;
-              }
-            case 'Manage User':
-              {
-                changePage(1);
-                break;
-              }
-            case 'Manage Voucher':
-              {
-                changePage(2);
-                break;
-              }
-            case 'Manage Products':
-              {
-                changePage(3);
-                break;
-              }
-            case 'Sales Report':
-              {
-                changePage(4);
-                break;
-              }
+              changePage(0);
+              break;
+            case 'User':
+              changePage(1);
+              break;
+            case 'Voucher':
+              changePage(2);
+              break;
+            case 'Products':
+              changePage(3);
+              break;
+            case 'Report':
+              changePage(4);
+              break;
           }
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.blue : Colors.grey,
+            Container(
+              padding: isSelected ? const EdgeInsets.all(8) : EdgeInsets.zero,
+              decoration: isSelected
+                  ? BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.blue[100],
+              )
+                  : null,
+              child: Icon(
+                icon,
+                color: isSelected ? Colors.blue : Colors.grey,
+              ),
             ),
             Text(
               label,

@@ -1,10 +1,9 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/voucher.dart';
 
 class VoucherRepository {
-  final CollectionReference _vouchersCollection = FirebaseFirestore.instance.collection('voucher');
+  final CollectionReference _vouchersCollection = FirebaseFirestore.instance.collection('Voucher');
 
   Future<List<Voucher>> getAllVoucher() async {
     try {

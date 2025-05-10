@@ -36,14 +36,13 @@ class Voucher {
     );
   }
 
-  factory Voucher.fromMap(Map<String, dynamic> map)
-  {
+  factory Voucher.fromMap(Map<String, dynamic> map) {
     return Voucher(
-      id: map['voucher_ID'] ?? '',
-      points: (map['points'] ?? 0).toInteger(),
-      discount: (map['discount'] ?? 0.0).toDounle(),
+      id: map['voucher_ID'] ?? '', // Use 'id' from the document ID, not 'voucher_ID'
+      points: (map['point'] as num?)?.toInt() ?? 0,
+      discount: (map['discount'] as num?)?.toDouble() ?? 0.0,
       description: map['description'] ?? '',
-      total: (map['total'] ?? 0).toInteger(),
+      total: (map['total'] as num?)?.toInt() ?? 0,
       expired_date: (map['expired_date'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }

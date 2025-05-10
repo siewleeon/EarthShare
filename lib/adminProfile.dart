@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AdminProfile extends StatefulWidget {
@@ -118,7 +117,7 @@ class _ProfilePageState extends State<AdminProfile>
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey,
+            color: Colors.grey.withValues(alpha: 0.5),
             spreadRadius: 1,
             blurRadius: 5,
           ),
@@ -129,56 +128,54 @@ class _ProfilePageState extends State<AdminProfile>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(Icons.account_circle_outlined, "Manage User", false),
-            _buildNavItem(Icons.abc, "Manage Voucher", false),
+            _buildNavItem(Icons.person_outline, "User", false),
+            _buildNavItem(Icons.local_offer, "Voucher", false),
             _buildNavItem(Icons.home, 'Home', true),
-            _buildNavItem(Icons.account_balance_outlined, "Manage Products", false),
-            _buildNavItem(Icons.insert_chart_outlined, "Sales Report", false),
+            _buildNavItem(Icons.store, "Products", false),
+            _buildNavItem(Icons.insert_chart, "Report", false),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isSelected)
-  {
+  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
     return Builder(
       builder: (context) => GestureDetector(
         onTap: () {
           switch (label) {
             case 'Home':
-              {
-                changePage(0);
-                break;
-              }
-            case 'Manage User':
-              {
-                changePage(1);
-                break;
-              }
-            case 'Manage Voucher':
-              {
-                changePage(2);
-                break;
-              }
-            case 'Manage Products':
-              {
-                changePage(3);
-                break;
-              }
-            case 'Sales Report':
-              {
-                changePage(4);
-                break;
-              }
+              changePage(0);
+              break;
+            case 'User':
+              changePage(1);
+              break;
+            case 'Voucher':
+              changePage(2);
+              break;
+            case 'Products':
+              changePage(3);
+              break;
+            case 'Report':
+              changePage(4);
+              break;
           }
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.blue : Colors.grey,
+            Container(
+              padding: isSelected ? const EdgeInsets.all(8) : EdgeInsets.zero,
+              decoration: isSelected
+                  ? BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.blue[100],
+              )
+                  : null,
+              child: Icon(
+                icon,
+                color: isSelected ? Colors.blue : Colors.grey,
+              ),
             ),
             Text(
               label,
