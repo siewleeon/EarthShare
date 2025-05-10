@@ -19,7 +19,6 @@ class _ProfilePageState extends State<ProfilePage> {
   String userId = '';
   String phone = '';
   String email = '';
-  String address = '';
   String avatarUrl = '';
   String sampleAvatarUrl =
       'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
@@ -74,7 +73,6 @@ class _ProfilePageState extends State<ProfilePage> {
         username = data['name'] ?? '';
         phone = data['phone'] ?? '';
         email = data['email'] ?? '';
-        address = data['address'] ?? '';
         avatarUrl = data['profile_Picture'] ?? '';
       });
     }
