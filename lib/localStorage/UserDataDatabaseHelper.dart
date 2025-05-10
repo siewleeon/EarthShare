@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -14,6 +15,7 @@ class UserDataDatabaseHelper {
   // 打开数据库
   _initDatabase() async {
     String path = join(await getDatabasesPath(), 'user_data.db');
+    debugPrint("DB >>>>>>>>>>>>>"+path);
     return openDatabase(path, version: 2, onCreate: _onCreate);
   }
 

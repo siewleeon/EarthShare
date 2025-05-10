@@ -183,9 +183,17 @@ class ProductDetailPage extends StatelessWidget {
           ),
           child: PageView(
             children: [
-              Image.asset(
+              Image.network(
                 product.imageUrl,
                 fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Center(child: Icon(Icons.broken_image));
+                },
+                loadingBuilder: (context, child, progress) {
+                  return progress == null
+                      ? child
+                      : const Center(child: CircularProgressIndicator());
+                },
               ),
             ],
           ),
