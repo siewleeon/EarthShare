@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -115,7 +116,28 @@ class _PostPageState extends State<PostPage> {
     double price = double.tryParse(_priceController.text.trim()) ?? 0.0;
     int quantity = int.tryParse(_quantityController.text.trim()) ?? 0;
     String description = _descriptionController.text.trim();
-    String sellerID = "U0001"; // 你可以根据需要动态生成
+
+    String? firebaseUID  = FirebaseAuth.instance.currentUser?.uid;
+    if (firebaseUID  == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('用户未登录，无法上传商品')),
+      );
+      return;
+    }
+
+    // 从 Firestore 获取用户 User_ID 字段
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('Users').doc(firebaseUID ).get();
+    final data = userDoc.data() as Map<String, dynamic>?;
+
+    if (data == null || !data.containsKey('userId')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('无法获取用户 ID')),
+      );
+      return;
+    }
+
+    String sellerID = data['userId'];
+
     int Condition = 0;
 
     if (name.isEmpty || _images.isEmpty) {
@@ -284,7 +306,6 @@ class _PostPageState extends State<PostPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
         const SizedBox(height: 10),
         _images.isEmpty
             ? const Text('No picture selected')
@@ -294,17 +315,39 @@ class _PostPageState extends State<PostPage> {
             scrollDirection: Axis.horizontal,
             itemCount: _images.length,
             itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.file(
-                    File(_images[index].path),
-                    width: 160,
-                    height: 160,
-                    fit: BoxFit.cover,
+              return Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.file(
+                        File(_images[index].path),
+                        width: 160,
+                        height: 160,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
-                ),
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _images.removeAt(index);
+                        });
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(Icons.close, color: Colors.white, size: 20),
+                      ),
+                    ),
+                  ),
+                ],
               );
             },
           ),
@@ -317,4 +360,5 @@ class _PostPageState extends State<PostPage> {
       ],
     );
   }
+
 }

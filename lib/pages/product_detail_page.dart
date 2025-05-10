@@ -42,7 +42,7 @@ class ProductDetailPage extends StatelessWidget {
             if (product == null) {
               return const Scaffold(
                 body: Center(
-                  child: Text('产品未找到'),
+                  child: Text('Product Not Found!!'),
                 ),
               );
             }
