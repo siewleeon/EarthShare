@@ -69,7 +69,7 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
         // Insert the new bank account into the database
         final result = await dbHelper.insertBankAccount(data);
 
-        if (result != null) {
+        if (result != -1) {
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Bank account successfully bound!')),
@@ -80,6 +80,11 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
 
           // Close the dialog
           Navigator.pop(context);
+        }
+        else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to bind bank account.')),
+          );
         }
       }
     } catch (e, stack) {
