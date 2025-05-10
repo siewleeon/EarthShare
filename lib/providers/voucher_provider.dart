@@ -8,6 +8,8 @@ class VoucherProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
+  bool _isDescending = true; // Track sort direction, default to descending
+
   List<Voucher> get vouchers => [..._vouchers];
 
   bool get isLoading => _isLoading;
@@ -32,6 +34,18 @@ class VoucherProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  void toggleSortVouchersById() {
+    _isDescending = !_isDescending; // Toggle sort direction
+    _vouchers.sort((a, b) {
+      // Extract the numeric part of voucher_ID (e.g., "0001" from "V0001")
+      final aNumber = int.parse(a.id.substring(1)); // Skip "V" and parse the rest
+      final bNumber = int.parse(b.id.substring(1));
+      // Sort based on direction
+      return _isDescending ? bNumber.compareTo(aNumber) : aNumber.compareTo(bNumber);
+    });
+    notifyListeners(); // Notify listeners to rebuild the UI with the sorted list
   }
 
   Future<Voucher?> getVoucherById(String voucherID) async {

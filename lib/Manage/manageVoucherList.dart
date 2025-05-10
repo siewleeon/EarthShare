@@ -52,7 +52,14 @@ class _ListPageState extends State<ManageVoucherList> {
         child: Column(
           children: [
             _buildSearchBar(),
-            _buildAddButton(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildSortButton(), // New sort button
+                const SizedBox(width: 8), // Space between buttons
+                _buildAddButton(),
+              ],
+            ),
             Expanded(child: _buildVoucherList()),
           ],
         ),
@@ -88,6 +95,36 @@ class _ListPageState extends State<ManageVoucherList> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSortButton() {
+    return Builder(
+      builder: (context) => GestureDetector(
+        onTap: () {
+          Provider.of<VoucherProvider>(context, listen: false).toggleSortVouchersById();
+        },
+        child: Container(
+          width: 44,
+          height: 44,
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.green, // You can change the color to match your design
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.green.withValues(alpha: 0.3),
+                spreadRadius: 2,
+                blurRadius: 5,
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.sort, // Icon for sorting
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }

@@ -38,7 +38,7 @@ class Voucher {
 
   factory Voucher.fromMap(Map<String, dynamic> map) {
     return Voucher(
-      id: map['voucher_ID'] ?? '', // Use 'id' from the document ID, not 'voucher_ID'
+      id: map['voucher_ID'] ?? '',
       points: (map['point'] as num?)?.toInt() ?? 0,
       discount: (map['discount'] as num?)?.toDouble() ?? 0.0,
       description: map['description'] ?? '',

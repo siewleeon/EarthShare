@@ -114,10 +114,23 @@ class _AddVoucherPageState extends State<AddVoucherPage> {
                   children: [
                     TextFormField(
                       controller: _idController,
-                      decoration: const InputDecoration(labelText: 'Voucher ID'),
+                      decoration: const InputDecoration(labelText: 'Voucher ID (e.g., V0001)'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a voucher ID';
+                        }
+                        // Check format: starts with "V" followed by 4 digits
+                        if (!value.startsWith('V') || value.length != 5) {
+                          return 'Voucher ID must start with "V" followed by 4 digits (e.g., V0001)';
+                        }
+                        // Extract the numeric part and validate
+                        final numberPart = value.substring(1);
+                        final number = int.tryParse(numberPart);
+                        if (number == null || number <= 0) {
+                          return 'The number part must be a positive integer';
+                        }
+                        if (numberPart.length != 4) {
+                          return 'The number part must be exactly 4 digits';
                         }
                         return null;
                       },
