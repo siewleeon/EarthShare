@@ -69,6 +69,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           .child('${widget.userUid}.jpg');
 
       print('Uploading image...');
+      await ref.putFile(_selectedImage!);
       print('Upload complete');
 
       final url = await ref.getDownloadURL();
