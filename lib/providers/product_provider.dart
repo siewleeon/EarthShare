@@ -118,12 +118,12 @@ class ProductProvider with ChangeNotifier {
 
   // 按类别筛选产品
   List<Product> getProductsByCategory(String category) {
-    return _products.where((product) => product.category == category).toList();
+    return _products.where((product) => product.productCategory == category).toList();
   }
 
   // 按标签筛选产品
   List<Product> getProductsByTag(String tag) {
-    return _products.where((product) => product.category == tag).toList();
+    return _products.where((product) => product.productCategory == tag).toList();
   }
 
   // 搜索产品
@@ -132,7 +132,7 @@ class ProductProvider with ChangeNotifier {
     return _products.where((product) {
       return product.name.toLowerCase().contains(lowercaseQuery) ||
              product.description.toLowerCase().contains(lowercaseQuery) ||
-             product.category.toLowerCase().contains(lowercaseQuery);
+             product.productCategory.toLowerCase().contains(lowercaseQuery);
     }).toList();
   }
 }

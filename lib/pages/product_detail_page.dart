@@ -114,7 +114,7 @@ class ProductDetailPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  product.category,
+                  product.productCategory,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14,
