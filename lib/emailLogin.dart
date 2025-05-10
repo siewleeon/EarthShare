@@ -33,13 +33,13 @@ class _LoginPageState extends State<EmailLoginPage> {
         const SnackBar(content: Text('Login successful!')),
       );
 
-
       Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Login failed: ${e.message} (code: ${e.code})')),
-
       );
+    }
+    finally {
     }
     finally {
       setState(() {
@@ -120,12 +120,25 @@ class _LoginPageState extends State<EmailLoginPage> {
                               MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
                             );
                           },
+                            );
+                          },
                           child: const Text(
                             "Forgot password?",
                             style: TextStyle(
                               color: Colors.blueAccent,
                               decoration: TextDecoration.underline,
                             ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        TextButton(onPressed: () {
+                          Navigator.pushNamed(context, '/adminLogin');
+                        },
+                          child: const Text("admin",style: TextStyle(color: Colors.blueAccent,
+                              decoration: TextDecoration.underline),
                           ),
                         ),
                       ],
@@ -152,6 +165,7 @@ class _LoginPageState extends State<EmailLoginPage> {
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
                       ),
+                      child: _isLoading ? const CircularProgressIndicator(
                       child: _isLoading ? const CircularProgressIndicator(
                         color: Colors.white,
                       )

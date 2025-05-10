@@ -21,6 +21,12 @@ import 'Manage/manageVoucherList.dart';
 import 'Manage/manageUserList.dart';
 import 'Manage/manageProductsList.dart';
 import 'Manage/salesReport.dart';
+import 'adminLoginPage.dart';
+import 'adminProfile.dart';
+import 'Manage/manageVoucherList.dart';
+import 'Manage/manageUserList.dart';
+import 'Manage/manageProductsList.dart';
+import 'Manage/salesReport.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -49,6 +55,9 @@ class MainApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (ctx) => PointProvider(),
         ),
+        ChangeNotifierProvider(
+          create: (ctx) => VoucherProvider(),
+        )
         ChangeNotifierProvider(
           create: (ctx) => VoucherProvider(),
         )
