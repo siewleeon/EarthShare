@@ -21,7 +21,7 @@ class ProductDetailPage extends StatelessWidget {
     return Consumer<ProductProvider>(
       builder: (context, productProvider, child) {
         return FutureBuilder<Product?>(
-          future: productProvider.getProductById(productId),
+          future: productProvider.getProductId(productId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Scaffold(
@@ -225,41 +225,6 @@ class ProductDetailPage extends StatelessWidget {
           ),
         ),
 
-        Positioned(
-          top: 16,
-          right: 16,
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.public,
-              color: Colors.blue,
-            ),
-          ),
-        ),
-
-        const Positioned(
-          left: 16,
-          bottom: 60, // 为了不被圆点覆盖
-          child: Text(
-            'x1',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -289,6 +254,14 @@ class ProductDetailPage extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'RM ${product.price.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                    ),
+                    Text(
+                      'QTY ：${product.quantity.toStringAsFixed(0)}',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,

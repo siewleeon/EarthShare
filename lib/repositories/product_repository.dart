@@ -20,7 +20,7 @@ class ProductRepository {
         debugPrint('文档ID: ${doc.id}');
         debugPrint('文档数据: $data');
 
-        return Product.fromMap({...data, 'id': doc.id});
+        return Product.fromMap(data, id: doc.id);
       }).toList();
 
       debugPrint('成功转换产品数量: ${products.length}');
@@ -39,12 +39,14 @@ class ProductRepository {
       if (!doc.exists) return null;
 
       final data = doc.data() as Map<String, dynamic>;
-      return Product.fromMap({...data, 'id': doc.id});
+      return Product.fromMap(data, id: doc.id);
     } catch (e) {
       debugPrint('获取产品详情失败: $e');
       return null;
     }
   }
+
+
 
   // 添加产品
   Future<String?> addProduct(Product product) async {

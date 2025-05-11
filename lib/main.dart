@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:second_hand_shop/pages/Product/post_page.dart';
+import 'package:second_hand_shop/pages/dashboardpage.dart';
 import 'mainLogin.dart';
 import 'providers/point_provider.dart';
 import 'pages/home_page.dart';
@@ -59,6 +60,7 @@ class MainApp extends StatelessWidget {
           '/register': (context) => const RegisterPage(),
           '/emailLogin': (context) => const EmailLoginPage(),
           '/phoneLogin': (context) => PhoneLoginPage(),
+          '/test': (context) => DashboardPage(),
         },
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),

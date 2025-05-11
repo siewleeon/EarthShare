@@ -231,7 +231,7 @@ class HistoryPage extends StatelessWidget {
               child: Row(
                 children: [
                   Image.network(
-                    product.imageUrl,  // 这里已经正确获取了 imageUrl
+                    product.imageId.first,  // 这里已经正确获取了 imageUrl
                     width: 50,
                     height: 50,
                     fit: BoxFit.cover,

@@ -27,14 +27,14 @@ class FirebaseService {
     final snapshot = await productsCollection.get();
     return snapshot.docs.map((doc) {
       final data = doc.data();
-      return Product.fromMap({...data, 'id': doc.id});
+      return Product.fromMap(data, id: doc.id);
     }).toList();
   }
 
   Future<Product?> getProduct(String productId) async {
     final doc = await productsCollection.doc(productId).get();
     if (doc.exists) {
-      return Product.fromMap({...doc.data()!, 'id': doc.id});
+      return Product.fromMap(doc.data()!, id: doc.id);
     }
     return null;
   }
@@ -64,7 +64,7 @@ class FirebaseService {
       final productDoc = await productsCollection.doc(productId).get();
       
       if (productDoc.exists) {
-        final product = Product.fromMap({...productDoc.data()!, 'id': productId});
+        final product = Product.fromMap(productDoc.data()!, id: productId);
         cartItems[productId] = CartItem(
           id: data['id'] ?? doc.id,
           product: product,

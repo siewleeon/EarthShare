@@ -1,8 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../models/product.dart';
+import '../../providers/product_provider.dart';
 import 'ProductDetailDialog.dart';
 
 class YourStorePage extends StatelessWidget {
@@ -12,106 +11,64 @@ class YourStorePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<ProductProvider>(context);
+    final userProducts = provider.getUserProducts(currentUserId);
+
     return Scaffold(
-      appBar: AppBar(title: const Text("My Post")),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('products')
-            .where('product_SellerID', isEqualTo: currentUserId)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+      appBar: AppBar(title: const Text('Your Products')),
+      body: userProducts.isEmpty
+          ? const Center(child: Text('You have not posted any products.'))
+          : ListView.builder(
+        itemCount: userProducts.length,
+        itemBuilder: (context, index) {
+          final product = userProducts[index];
 
-          final products = snapshot.data!.docs
-              .map((doc) => Product.fromMap(doc.data() as Map<String, dynamic>))
-              .toList();
+          return Card(
+            margin: const EdgeInsets.all(8),
+            child: ListTile(
+              leading: Image.network(product.imageId.first, width: 60, height: 60, fit: BoxFit.cover),
+              title: Text(product.name),
+              subtitle: Text('RM ${product.price.toStringAsFixed(2)} • ${product.conditionLabel}'),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () async {
+                      final updated = await showDialog(
+                        context: context,
+                        builder: (_) => ProductEditDialog(product: product),
+                      );
+                      if (updated == true) {
+                        provider.fetchProducts(); // 重新获取数据
+                      }
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          title: const Text('Delete Product'),
+                          content: const Text('Are you sure you want to delete this product?'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
+                          ],
+                        ),
+                      );
 
-          if (products.isEmpty) {
-            return const Center(child: Text("You have not posted any products."));
-          }
-
-          return ListView.builder(
-            itemCount: products.length,
-            itemBuilder: (context, index) {
-              final product = products[index];
-              return Card(
-                margin: const EdgeInsets.all(8),
-                elevation: 4,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 图片滑动显示
-                    SizedBox(
-                      height: 200,
-                      child: PageView.builder(
-                        itemCount: product.imageId.length,
-                        itemBuilder: (context, imgIndex) {
-                          return Image.network(
-                            product.imageId[imgIndex],
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
-                          );
-                        },
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(product.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                          Text("Quantity: ${product.quantity}"),
-                          Text("Price: RM ${product.price.toStringAsFixed(2)}"),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (_) => ProductDetailDialog(product: product),
-                                  );
-                                },
-                                child: const Text("View Detail"),
-                              ),
-                              const SizedBox(width: 10),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _confirmDelete(context, product),
-                              ),
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
+                      if (confirm == true) {
+                        await provider.deleteProduct(product.id);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
           );
         },
-      ),
-    );
-  }
-
-  void _confirmDelete(BuildContext context, Product product) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Confirm Delete"),
-        content: Text("Are you sure you want to delete '${product.name}'?"),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await FirebaseFirestore.instance.collection('products').doc(product.id).delete();
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text("Delete"),
-          ),
-        ],
       ),
     );
   }

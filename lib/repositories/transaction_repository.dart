@@ -52,7 +52,6 @@ class TransactionRepository {
               id: item['productId'] ?? '',
               name: '',  // 这些字段将从产品集合中获取
               price: (item['price'] ?? 0.0).toDouble(),
-              imageUrl: '',
               productCategory: '',
               uploadTime: DateTime.now(),  // 默认当前时间
               editTime: DateTime.now(),    // 默认当前时间

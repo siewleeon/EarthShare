@@ -11,7 +11,9 @@ import 'Product/post_page.dart';
 import 'cart_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final String selectedCategory;
+
+  const HomePage({super.key, this.selectedCategory = 'All'});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -19,7 +21,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String _searchQuery = '';
-  String _selectedCategory = 'All';
+  late String _selectedCategory;
   String userId = '';
 
 
@@ -27,12 +29,13 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _selectedCategory = widget.selectedCategory;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ProductProvider>(context, listen: false).fetchProducts();
     });
   }
 
-  void _loadUserProfile() async {
+  void _loadUser() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) return;
 
@@ -112,7 +115,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    _loadUserProfile();
+    _loadUser();
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -165,7 +168,7 @@ class _HomePageState extends State<HomePage> {
               Navigator.pushReplacementNamed(context, '/home');
               break;
             case 'Cart':
-              Navigator.pushReplacementNamed(context, '/cart');
+              Navigator.pushReplacementNamed(context, '/test');
               break;
             case 'History':
               Navigator.pushReplacementNamed(context, '/history');
@@ -325,7 +328,8 @@ class _HomePageState extends State<HomePage> {
           final nameMatch = product.name.toLowerCase().contains(_searchQuery);
           final categoryMatch = _selectedCategory == 'All' || product.productCategory == _selectedCategory;
           final notOwnedByUser = product.sellerId != userId;
-          return nameMatch && categoryMatch && notOwnedByUser;
+          final noEmpty = product.quantity != 0;
+          return nameMatch && categoryMatch && notOwnedByUser && noEmpty;
         }).toList();
 
 
