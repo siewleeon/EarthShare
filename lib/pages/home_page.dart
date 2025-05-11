@@ -323,26 +323,39 @@ class _HomePageState extends State<HomePage> {
                       ),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              product.name,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            // Left side: Product info
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    product.name,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'RM ${product.price.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                        fontSize: 14, fontWeight: FontWeight.w500),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    product.productCategory,
+                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(width: 8),
+                            // Right side: Quantity display
                             Text(
-                              'RM ${product.price.toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.w500),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              product.productCategory,
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.grey),
+                              'x${product.quantity}', // 假设你有 product.quantity
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                             ),
                           ],
                         ),
