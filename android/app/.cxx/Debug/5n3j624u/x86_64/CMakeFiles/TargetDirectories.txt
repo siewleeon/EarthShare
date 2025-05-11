@@ -1,0 +1,2 @@
+C:/Users/Cha/OneDrive/Desktop/test2/EarthShare/android/app/.cxx/Debug/5n3j624u/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/Cha/OneDrive/Desktop/test2/EarthShare/android/app/.cxx/Debug/5n3j624u/x86_64/CMakeFiles/rebuild_cache.dir

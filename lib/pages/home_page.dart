@@ -10,7 +10,7 @@ import 'history_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
-
+  
   @override
   Widget build(BuildContext context) {
     // 在构建时触发数据加载

@@ -145,4 +145,11 @@ class CartProvider with ChangeNotifier {
       return null;
     }
   }
+
+  int getItemQuantity(String productId) {
+    if (_items.containsKey(productId)) {
+      return _items[productId]!.quantity;
+    }
+    return 0;
+  }
 }

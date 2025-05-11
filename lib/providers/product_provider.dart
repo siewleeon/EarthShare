@@ -135,4 +135,46 @@ class ProductProvider with ChangeNotifier {
              product.productCategory.toLowerCase().contains(lowercaseQuery);
     }).toList();
   }
+
+  // 更新产品库存数量
+  Future<bool> updateProductQuantity(String productId, int quantityToReduce) async {
+    _isLoading = true;
+    notifyListeners();
+    
+    try {
+      // 先获取当前产品
+      final product = await _productRepository.getProductById(productId);
+      if (product == null) {
+        return false;
+      }
+      
+      // 计算新的库存数量
+      final newQuantity = product.quantity - quantityToReduce;
+      if (newQuantity < 0) {
+        return false;
+      }
+      
+      // 创建更新后的产品对象
+      final updatedProduct = product.copyWith(quantity: newQuantity);
+      
+      // 更新产品
+      final success = await _productRepository.updateProduct(updatedProduct);
+      if (success) {
+        // 更新本地缓存
+        final index = _products.indexWhere((p) => p.id == productId);
+        if (index >= 0) {
+          _products[index] = updatedProduct;
+          notifyListeners();
+        }
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('更新产品库存失败: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }
