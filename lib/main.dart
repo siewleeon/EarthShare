@@ -68,6 +68,7 @@ class MainApp extends StatelessWidget {
           '/adminLogin': (context) => const AdminLoginPage(),
           '/adminPage': (context) => const AdminProfile(),
           '/manageVoucherPage': (context) => const ManageVoucherList(),
+          '/salesReportPage': (context) => const SalesReport(),
         },
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),

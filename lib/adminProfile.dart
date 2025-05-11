@@ -44,6 +44,7 @@ class _ProfilePageState extends State<AdminProfile>
         {
           debugPrint("report");
           // Change page to Sales Report
+          Navigator.pushNamed(context, "/salesReportPage");
           break;
         }
       case 5:
