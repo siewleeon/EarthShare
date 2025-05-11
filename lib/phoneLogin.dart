@@ -47,7 +47,6 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
         password: password,
       );
 
-      // 登录成功，跳转到首页
       Navigator.pushReplacementNamed(context, '/home');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -66,7 +65,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/mobileLogin_background.png', // Use the same background image as in emailLogin
+              'assets/images/mobileLogin_background.png',
               fit: BoxFit.cover,
             ),
 
@@ -78,16 +77,23 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
               child: Column(
                 children: [
                   const SizedBox(height: 24),
+                  // Logo Image
+                  Image.asset(
+                    'assets/images/mobileLogin_logo.png',
+                    width: 250,
+                    height: 250,
+                  ),
+                  const SizedBox(height: 24),
                   TextField(
                     controller: phoneController,
-                    decoration: _inputDecoration("Phone Number"), // Same input decoration style
+                    decoration: _inputDecoration("Phone Number"),
                     keyboardType: TextInputType.phone,
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: passwordController,
                     obscureText: true,
-                    decoration: _inputDecoration("Password"), // Same input decoration style
+                    decoration: _inputDecoration("Password"),
                   ),
                   const SizedBox(height: 10),
                   Row(
