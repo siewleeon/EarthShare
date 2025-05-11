@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'mainLogin.dart';
+
 class AdminLoginPage extends StatefulWidget {
   const AdminLoginPage({super.key});
 
@@ -144,10 +146,13 @@ class _LoginPageState extends State<AdminLoginPage> {
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.pop(context); // Go back to EmailLoginPage
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+                            );
                           },
                           child: const Text(
-                            'Email Login',
+                            'mainLogin',
                             style: TextStyle(
                               color: Colors.blueAccent,
                               decoration: TextDecoration.underline,

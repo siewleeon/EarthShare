@@ -2,10 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:second_hand_shop/accountSetting.dart';
 import 'package:second_hand_shop/pages/Product/YourStoragePage.dart';
+import 'package:second_hand_shop/pages/Product/post_page.dart';
 import 'package:second_hand_shop/pages/contactUs_page.dart';
 import 'package:second_hand_shop/pages/points_page.dart';
 import './edit_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../pages/voucher_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -108,6 +110,14 @@ class _ProfilePageState extends State<ProfilePage> {
                       buildFeatureButton(
                         label: "Voucher",
                         icon: Icons.confirmation_number,
+                        onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const VoucherPage(),
+                        ),
+                      );
+                    },
                       ),
                       buildFeatureButton(
                         label: "Earning Points",
@@ -129,33 +139,22 @@ class _ProfilePageState extends State<ProfilePage> {
                       buildFeatureButton(
                         label: "My Post",
                         icon: Icons.post_add,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => YourStorePage(currentUserId : userId),
+                            ),
+                          );
+                        },
                       ),
                       buildFeatureButton(
                         label: "History",
                         icon: Icons.lock_clock,
                         iconBgColor: Colors.grey,
+                        // 可以加跳转逻辑
                       ),
                     ]),
-                buildCardSection("My Store", [
-                  buildFeatureButton(
-                    label: "My Post",
-                    icon: Icons.post_add,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => YourStorePage(currentUserId : userId),
-                        ),
-                      );
-                    },
-                  ),
-                  buildFeatureButton(
-                    label: "History",
-                    icon: Icons.lock_clock,
-                    iconBgColor: Colors.grey,
-                    // 可以加跳转逻辑
-                  ),
-                ]),
 
                     // Support section
                     buildCardSection("Support", [
@@ -328,7 +327,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-
   Widget _buildBottomNavigationBar() {
     return Container(
       decoration: BoxDecoration(
@@ -366,7 +364,7 @@ class _ProfilePageState extends State<ProfilePage> {
               Navigator.pushReplacementNamed(context, '/home');
               break;
             case 'Cart':
-              Navigator.pushReplacementNamed(context, '/cart');
+              Navigator.pushReplacementNamed(context, '/test');
               break;
             case 'History':
               Navigator.pushReplacementNamed(context, '/history');
@@ -397,23 +395,28 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildAddButton() {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: Colors.blue,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue,
-            spreadRadius: 2,
-            blurRadius: 5,
-          ),
-        ],
-      ),
-      child: const Icon(
-        Icons.add,
-        color: Colors.white,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const PostPage()),
+        );
+      },
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: Colors.lightGreen,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.lightGreen.withOpacity(0.3),
+              spreadRadius: 2,
+              blurRadius: 5,
+            ),
+          ],
+        ),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

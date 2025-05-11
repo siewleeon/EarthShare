@@ -14,11 +14,17 @@ class _ContactUsPageState extends State<ContactUsPage> {
   final _emailController = TextEditingController();
   final _messageController = TextEditingController();
 
+  bool _isLoading = false; // Track loading state
+
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       final name = _nameController.text.trim();
       final email = _emailController.text.trim();
       final message = _messageController.text.trim();
+
+      setState(() {
+        _isLoading = true; // Show loading indicator
+      });
 
       try {
         await FirebaseFirestore.instance.collection('contactMessages').add({
@@ -63,6 +69,10 @@ class _ContactUsPageState extends State<ContactUsPage> {
             ],
           ),
         );
+      } finally {
+        setState(() {
+          _isLoading = false; // Hide loading indicator
+        });
       }
     }
   }
@@ -135,7 +145,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 24),
-                // Message Text
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
@@ -149,7 +158,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                // Contact Cards
                 _buildContactCard(
                   icon: Icons.phone,
                   iconColor: Colors.blue,
@@ -166,10 +174,9 @@ class _ContactUsPageState extends State<ContactUsPage> {
                   icon: Icons.location_city,
                   iconColor: Colors.grey.shade800,
                   title: 'Office Address',
-                  content: 'EarthShare HQ, Kuala Lumpur, Malaysia\nOffice Hours:Mon to Sat,9 AM – 6 PM',
+                  content: 'EarthShare HQ, Kuala Lumpur, Malaysia\nOffice Hours: Mon to Sat, 9 AM – 6 PM',
                 ),
                 const SizedBox(height: 10),
-                // Contact Form
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Form(
@@ -178,11 +185,10 @@ class _ContactUsPageState extends State<ContactUsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Whether you are curious about anything,we would love to hear from you!',
+                          'Whether you are curious about anything, we would love to hear from you!',
                           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 20),
-                        // Name
                         TextFormField(
                           controller: _nameController,
                           decoration: InputDecoration(
@@ -196,7 +202,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
                               : null,
                         ),
                         const SizedBox(height: 16),
-                        // Email
                         TextFormField(
                           controller: _emailController,
                           decoration: InputDecoration(
@@ -217,7 +222,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
                           },
                         ),
                         const SizedBox(height: 16),
-                        // Message
                         TextFormField(
                           controller: _messageController,
                           decoration: InputDecoration(
@@ -232,12 +236,11 @@ class _ContactUsPageState extends State<ContactUsPage> {
                               : null,
                         ),
                         const SizedBox(height: 24),
-                        // Submit Button
                         Center(
                           child: ElevatedButton.icon(
-                            onPressed: _submitForm,
+                            onPressed: _isLoading ? null : _submitForm, // Disable button when loading
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF66BB6A), // 柔和绿色
+                              backgroundColor: const Color(0xFF66BB6A),
                               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
@@ -245,14 +248,14 @@ class _ContactUsPageState extends State<ContactUsPage> {
                               elevation: 6,
                               shadowColor: Colors.black45,
                             ),
-                            icon: const Icon(Icons.send, color: Colors.white),
-                            label: const Text(
+                            icon: _isLoading
+                                ? const CircularProgressIndicator(color: Colors.white)
+                                : const Icon(Icons.send, color: Colors.white),
+                            label: _isLoading
+                                ? const Text('Sending...', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white))
+                                : const Text(
                               'Send Message',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                             ),
                           ),
                         ),
@@ -322,5 +325,4 @@ class _ContactUsPageState extends State<ContactUsPage> {
       ),
     );
   }
-
 }

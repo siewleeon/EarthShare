@@ -36,6 +36,7 @@ class _ManageContactMessagesPageState extends State<ManageContactMessagesPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Contact Messages'),
+        backgroundColor: Colors.deepPurple,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _fetchMessages(),
@@ -199,63 +200,108 @@ class _MessageDetailPageState extends State<MessageDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Message Details')),
+      appBar: AppBar(
+          title: const Text('Message Details'),backgroundColor: Colors.deepPurple,),
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            Text('Name: ${widget.name}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('Email: ${widget.email}', style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 8),
-            Text('Message: ${widget.messageContent}', style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 8),
-            Text('Timestamp: ${widget.timestamp.toDate()}', style: const TextStyle(fontSize: 16)),
+            _buildDetailRow('Name', widget.name),
+            const SizedBox(height: 12),
+            _buildDetailRow('Email', widget.email),
+            const SizedBox(height: 12),
+            _buildDetailRow('Message', widget.messageContent),
+            const SizedBox(height: 12),
+            _buildDetailRow('Timestamp', widget.timestamp.toDate().toString()),
             const SizedBox(height: 16),
-            const Text('Status:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            DropdownButtonFormField<String>(
-              value: _selectedStatus,
-              items: _statusOptions.map((status) {
-                return DropdownMenuItem<String>(
-                  value: status,
-                  child: Text(status),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedStatus = value;
-                });
-              },
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-            ),
+            _buildStatusSelector(),
             const SizedBox(height: 20),
-            const Text('Admin Note:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _noteController,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Enter your handling note...',
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _updateStatusAndNote,
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Save Changes'),
-            ),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _confirmDelete,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Delete Message'),
-            ),
+            _buildAdminNoteField(),
+            const SizedBox(height: 24),
+            _buildActionButtons(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String content) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('$label:', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(content, style: const TextStyle(fontSize: 16)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Status:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: _selectedStatus,
+          items: _statusOptions.map((status) {
+            return DropdownMenuItem<String>(
+              value: status,
+              child: Text(status),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _selectedStatus = value;
+            });
+          },
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAdminNoteField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Admin Note:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _noteController,
+          maxLines: 4,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            hintText: 'Enter your handling note...',
+            contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Column(
+      children: [
+        ElevatedButton(
+          onPressed: _isLoading ? null : _updateStatusAndNote,
+          child: _isLoading
+              ? const CircularProgressIndicator(color: Colors.white)
+              : const Text('Save Changes'),
+        ),
+        const SizedBox(height: 12),
+        ElevatedButton(
+          onPressed: _isLoading ? null : _confirmDelete,
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          child: const Text('Delete Message'),
+        ),
+      ],
     );
   }
 }
