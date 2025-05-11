@@ -108,6 +108,14 @@ class _ProfilePageState extends State<ProfilePage> {
                       buildFeatureButton(
                         label: "Voucher",
                         icon: Icons.confirmation_number,
+                        onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const VoucherPage(),
+                        ),
+                      );
+                    },
                       ),
                       buildFeatureButton(
                         label: "Earning Points",
