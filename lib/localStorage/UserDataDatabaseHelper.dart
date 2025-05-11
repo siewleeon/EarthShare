@@ -15,7 +15,7 @@ class UserDataDatabaseHelper {
   // 打开数据库
   _initDatabase() async {
     String path = join(await getDatabasesPath(), 'user_data.db');
-    debugPrint("DB >>>>>>>>>>>>>"+path);
+    debugPrint("DB >>>>>>>>>>>>>" + path);
     return openDatabase(path, version: 2, onCreate: _onCreate);
   }
 
@@ -32,6 +32,7 @@ class UserDataDatabaseHelper {
         cvv TEXT
       );
     ''');
+  }
 
   // 插入银行卡数据
   Future<int> insertBankAccount(Map<String, dynamic> data) async {
@@ -39,6 +40,7 @@ class UserDataDatabaseHelper {
     print('Inserting bank account: $data');
     return await db.insert('bank_accounts', data);
   }
+
   Future<int> deleteBankAccount(int id) async {
     final db = await database;
     return await db.delete('bank_accounts', where: 'id = ?', whereArgs: [id]);
@@ -51,12 +53,13 @@ class UserDataDatabaseHelper {
   }
 
   // 获取指定用户的银行卡数据
-  Future<List<Map<String, dynamic>>> getBankAccountsByUserID(String userID) async {
+  Future<List<Map<String, dynamic>>> getBankAccountsByUserID(
+      String userID) async {
     final db = await database;
     return await db.query(
       'bank_accounts',
       where: 'userID = ?', // Condition to match userID
-      whereArgs: [userID],  // Pass userID as argument
+      whereArgs: [userID], // Pass userID as argument
     );
   }
 
@@ -73,7 +76,8 @@ class UserDataDatabaseHelper {
   // 获取所有保存的地址
   Future<List<String>> getSavedAddresses() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('shipping_addresses');
+    final List<Map<String, dynamic>> maps = await db.query(
+        'shipping_addresses');
     return List.generate(maps.length, (i) => maps[i]['address'] as String);
   }
 }
