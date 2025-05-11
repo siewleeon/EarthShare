@@ -66,6 +66,25 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
+  Color getStrengthColor(String strength) {
+    return switch (strength) {
+      "Strong" => Colors.green,
+      "Medium" => Colors.orange,
+      "Weak" => Colors.redAccent,
+      _ => Colors.red
+    };
+  }
+
+  String? validateConfirmPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please confirm your password';
+    }
+    if (value != passwordController.text) {
+      return 'Passwords do not match';
+    }
+    return null;
+  }
+
   @override
   void dispose() {
     nameController.dispose();
@@ -112,7 +131,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       _buildTextField('Phone Number', controllerName: phoneController),
                       _buildTextField('Email Address', controllerName: emailController),
                       _buildPasswordField('Password'),
-                      _buildTextField('Confirm Password', isObscure: true, controllerName: confirmPasswordController),
+                      _buildConfirmPasswordField('Confirm Password'),
                       const SizedBox(height: 16),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,33 +247,27 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildTextField(String label, {bool isObscure = false, required TextEditingController controllerName}) {
+  Widget _buildTextField(String label, {TextEditingController? controllerName, bool isObscure = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
-          const SizedBox(height: 4),
-          TextFormField(
-            obscureText: isObscure,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.blue[50],
-              border: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.black),
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            controller: controllerName,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter $label';
-              }
-              return null;
-            },
+      child: TextFormField(
+        controller: controllerName,
+        obscureText: isObscure,
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: Colors.blue[50],
+          border: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.black),
+            borderRadius: BorderRadius.circular(12),
           ),
-        ],
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter your $label';
+          }
+          return null;
+        },
       ),
     );
   }
@@ -284,15 +297,40 @@ class _RegisterPageState extends State<RegisterPage> {
                 return 'Please enter a password';
               } else if (passwordStrength == 'Too short') {
                 return 'Password is too short';
-              } else {
-                return null;
               }
+              return null;
             },
           ),
           const SizedBox(height: 8),
           Text(
             checkPasswordStrength(passwordController.text),
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: getStrengthColor(checkPasswordStrength(passwordController.text))),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConfirmPasswordField(String label) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+          const SizedBox(height: 4),
+          TextFormField(
+            obscureText: true,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.blue[50],
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            controller: confirmPasswordController,
+            validator: validateConfirmPassword,
           ),
         ],
       ),

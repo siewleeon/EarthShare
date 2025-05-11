@@ -79,7 +79,10 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -91,59 +94,68 @@ class _ProfilePageState extends State<ProfilePage> {
               fit: BoxFit.cover,
             ),
           ),
-          // 前景内容
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                buildTopSection(),
 
-                buildCardSection("My Points", [
-                  buildFeatureButton(
-                    label: "Voucher",
-                    icon: Icons.confirmation_number,
-                  ),
-                  buildFeatureButton(
-                    label: "Earning Points",
-                    icon: Icons.monetization_on,
-                    iconBgColor: Colors.purple.shade50,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PointsPage(userId: userId),
-                        ),
-                      );
-                    },
-                  ),
-                ]),
+          // 内容区
+          SafeArea(
+            child: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: screenHeight),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildTopSection(),
 
-                buildCardSection("My Store", [
-                  buildFeatureButton(
-                    label: "My Post",
-                    icon: Icons.post_add,
-                  ),
-                  buildFeatureButton(
-                    label: "History",
-                    icon: Icons.lock_clock,
-                    iconBgColor: Colors.grey,
-                  ),
-                ]),
+                    buildCardSection("My Points", [
+                      buildFeatureButton(
+                        label: "Voucher",
+                        icon: Icons.confirmation_number,
+                      ),
+                      buildFeatureButton(
+                        label: "Earning Points",
+                        icon: Icons.monetization_on,
+                        iconBgColor: Colors.purple.shade50,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PointsPage(userId: userId),
+                            ),
+                          );
+                        },
+                      ),
+                    ]),
 
-                buildCardSection("Support", [
-                  buildFeatureButton(
-                    label: "Contact Us",
-                    icon: Icons.support_agent,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ContactUsPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ]),
-              ],
+                    buildCardSection("My Store", [
+                      buildFeatureButton(
+                        label: "My Post",
+                        icon: Icons.post_add,
+                      ),
+                      buildFeatureButton(
+                        label: "History",
+                        icon: Icons.lock_clock,
+                        iconBgColor: Colors.grey,
+                      ),
+                    ]),
+
+                    buildCardSection("Support", [
+                      buildFeatureButton(
+                        label: "Contact Us",
+                        icon: Icons.support_agent,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ContactUsPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ]),
+
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
