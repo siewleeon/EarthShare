@@ -1,5 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../localStorage/UserDataDatabaseHelper.dart';
 
 class ContactUsPage extends StatefulWidget {
   const ContactUsPage({super.key});
@@ -13,7 +13,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _messageController = TextEditingController();
-  final dbHelper = UserDataDatabaseHelper();
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
@@ -21,34 +20,53 @@ class _ContactUsPageState extends State<ContactUsPage> {
       final email = _emailController.text.trim();
       final message = _messageController.text.trim();
 
-      await dbHelper.insertContactUs({
-        'name': name,
-        'email': email,
-        'message': message,
-        'timestamp': DateTime.now().toString(),
-      });
+      try {
+        await FirebaseFirestore.instance.collection('contactMessages').add({
+          'name': name,
+          'email': email.toLowerCase(),
+          'message': message,
+          'timestamp': FieldValue.serverTimestamp(),
+          'status': 'pending',
+        });
 
-      // 弹出成功提示框
-      await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Success'),
-          content: const Text('Your message has been sent successfully!'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Success'),
+            content: const Text('Your message has been sent successfully!'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
 
-      _formKey.currentState!.reset();
-      _nameController.clear();
-      _emailController.clear();
-      _messageController.clear();
+        _formKey.currentState!.reset();
+        _nameController.clear();
+        _emailController.clear();
+        _messageController.clear();
+      } catch (e) {
+        print("Error submitting form: $e");
+
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Error'),
+            content: const Text('Failed to send message. Please try again later.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
     }
   }
+
   @override
   void dispose() {
     _nameController.dispose();
