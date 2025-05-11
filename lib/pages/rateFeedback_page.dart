@@ -12,6 +12,7 @@ class _RateFeedbackPageState extends State<RateFeedbackPage> {
   final _formKey = GlobalKey<FormState>();
   final _commentController = TextEditingController();
   int _rating = 5;
+  String _feedbackType = 'Suggestion';
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
@@ -19,6 +20,7 @@ class _RateFeedbackPageState extends State<RateFeedbackPage> {
         await FirebaseFirestore.instance.collection('feedbacks').add({
           'rating': _rating,
           'comment': _commentController.text.trim(),
+          'type': _feedbackType,
           'timestamp': FieldValue.serverTimestamp(),
         });
 
@@ -139,6 +141,28 @@ class _RateFeedbackPageState extends State<RateFeedbackPage> {
                       }
                     },
                   ),
+
+                  const Text('Feedback Type:'),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: _feedbackType,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    items: ['Bug', 'Suggestion', 'UX', 'Other']
+                        .map((type) => DropdownMenuItem(
+                      value: type,
+                      child: Text(type),
+                    ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() => _feedbackType = val);
+                      }
+                    },
+                  ),
+
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _commentController,

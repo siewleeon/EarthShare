@@ -71,7 +71,7 @@ class _ProfilePageState extends State<AdminProfile>
           // Change page to Admin Login Page
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AdminFeedbackListPage()),
+            MaterialPageRoute(builder: (context) => const ManageFeedbackPage()),
           );
           break;
         }
