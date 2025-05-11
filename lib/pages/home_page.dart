@@ -8,6 +8,7 @@ import '../providers/cart_provider.dart';
 import '../providers/product_provider.dart';
 import 'Product/post_page.dart';
 import 'cart_page.dart';
+import 'dashboardpage.dart';
 
 class HomePage extends StatefulWidget {
   final String selectedCategory;
@@ -107,7 +108,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           children: [
             _buildSearchBar(),
-            _buildCategories(),
+            _buildCategoriesScrollable(),
             Expanded(child: _buildProductGrid()),
           ],
         ),
@@ -147,36 +148,79 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildCategories() {
+// Alternative: Single-row scrollable layout with ListView
+  Widget _buildCategoriesScrollable() {
     final categories = [
-      'All', 'Shoes', 'Fashion', 'Electronic', 'Toy', 'Furniture',
-      'Beauty', 'Health', 'Game', 'Camera', 'Other'
+      {'label': 'All', 'icon': Icons.all_inclusive},
+      {'label': 'Shoes', 'icon': Icons.directions_run},
+      {'label': 'Fashion', 'icon': Icons.checkroom},
+      {'label': 'Electronic', 'icon': Icons.computer},
+      {'label': 'Toy', 'icon': Icons.toys},
+      {'label': 'Furniture', 'icon': Icons.chair},
+      {'label': 'Beauty', 'icon': Icons.brush},
+      {'label': 'Health', 'icon': Icons.health_and_safety},
+      {'label': 'Game', 'icon': Icons.sports_esports},
+      {'label': 'Camera', 'icon': Icons.photo_camera},
+      {'label': 'Other', 'icon': Icons.category},
     ];
 
     return SizedBox(
-      height: 40,
+      height: 90, // Adjusted to fit icon + text
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
         itemBuilder: (context, index) {
           final category = categories[index];
-          final isSelected = _selectedCategory == category;
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _selectedCategory = category;
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isSelected ? Colors.green[200] : Colors.grey[200],
-                foregroundColor: isSelected ? Colors.white : Colors.black87,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
+          final label = category['label'] as String;
+          final icon = category['icon'] as IconData;
+          final selected = _selectedCategory == label;
+
+          return AnimatedCategoryItem(
+            delay: Duration(milliseconds: index * 20),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    _selectedCategory = label;
+                  });
+                },
+                child: Column(
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.2),
+                            spreadRadius: 1,
+                            blurRadius: 3,
+                          ),
+                        ],
+                        border: selected
+                            ? Border.all(color: Colors.lightGreen, width: 2)
+                            : null,
+                      ),
+                      child: Icon(
+                        icon,
+                        color: selected ? Colors.lightGreen : Colors.grey,
+                        size: 30,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: selected ? Colors.lightGreen : Colors.grey,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Text(category),
             ),
           );
         },

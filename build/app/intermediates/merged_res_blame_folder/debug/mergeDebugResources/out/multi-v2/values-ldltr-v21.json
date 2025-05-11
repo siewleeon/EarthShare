@@ -4,7 +4,7 @@
             "outputFile": "my.edu.tarc.com.example.p8userprofile.app-mergeDebugResources-50:/values-ldltr-v21/values-ldltr-v21.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\MyMSI\\.gradle\\caches\\8.10.2\\transforms\\600100b204d7991129d8a98098b381e1\\transformed\\appcompat-1.1.0\\res\\values-ldltr-v21\\values-ldltr-v21.xml",
+                    "source": "C:\\Users\\liang\\.gradle\\caches\\8.10.2\\transforms\\600100b204d7991129d8a98098b381e1\\transformed\\appcompat-1.1.0\\res\\values-ldltr-v21\\values-ldltr-v21.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
