@@ -75,6 +75,35 @@ class _RegisterPageState extends State<RegisterPage> {
     };
   }
 
+  String? validateName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter your full name';
+    }
+    return null;
+  }
+
+  String? validatePhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter your phone number';
+    }
+    final phoneRegExp = RegExp(r'^\+?[0-9]{7,15}$');
+    if (!phoneRegExp.hasMatch(value)) {
+      return 'Enter a valid phone number';
+    }
+    return null;
+  }
+
+  String? validateEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter your email';
+    }
+    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegExp.hasMatch(value)) {
+      return 'Enter a valid email address';
+    }
+    return null;
+  }
+
   String? validateConfirmPassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please confirm your password';
@@ -83,6 +112,51 @@ class _RegisterPageState extends State<RegisterPage> {
       return 'Passwords do not match';
     }
     return null;
+  }
+
+  void _handleRegister() async {
+    if (_formKey.currentState!.validate() && agreeToTerms) {
+      try {
+        final credential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+
+        final userId = await _generateNewUserId();
+
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(credential.user!.uid)
+            .set({
+          'userId': userId,
+          'name': nameController.text.trim(),
+          'phone': phoneController.text.trim(),
+          'email': emailController.text.trim(),
+          'profile_Picture': avatarUrl,
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Registration successful!")),
+        );
+
+        Navigator.pushNamed(context, '/emailLogin');
+      } on FirebaseAuthException catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Auth Error: ${e.message}")),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Registration failed: $e")),
+        );
+      }
+    } else if (!agreeToTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please agree to terms before registering.'),
+        ),
+      );
+    }
   }
 
   @override
@@ -108,146 +182,118 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
           // Form content
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              children: [
-                const SizedBox(height: 60),
-                const Text(
-                  "Let's Create an Account!",
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      _buildTextField('Full Name', controllerName: nameController),
-                      _buildTextField('Phone Number', controllerName: phoneController),
-                      _buildTextField('Email Address', controllerName: emailController),
-                      _buildPasswordField('Password'),
-                      _buildConfirmPasswordField('Confirm Password'),
-                      const SizedBox(height: 16),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Checkbox(
-                            value: agreeToTerms,
-                            onChanged: (value) {
-                              setState(() {
-                                agreeToTerms = value!;
-                              });
-                            },
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 60),
+                        const Text(
+                          "Let's Create an Account!",
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
-                          Expanded(
-                            child: Text.rich(
-                              TextSpan(
-                                text: 'By continuing, you agree to our ',
-                                style: const TextStyle(color: Colors.black),
+                        ),
+                        const SizedBox(height: 20),
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              _buildTextField('Full Name', controllerName: nameController, validator: validateName),
+                              _buildTextField('Phone Number', controllerName: phoneController, validator: validatePhone),
+                              _buildTextField('Email Address', controllerName: emailController, validator: validateEmail),
+                              _buildPasswordField('Password'),
+                              _buildConfirmPasswordField('Confirm Password'),
+                              const SizedBox(height: 16),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  TextSpan(
-                                    text: 'EarthShare’s Terms of Use',
-                                    style: const TextStyle(
-                                        color: Colors.blueAccent,
-                                        decoration: TextDecoration.underline),
+                                  Checkbox(
+                                    value: agreeToTerms,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        agreeToTerms = value!;
+                                      });
+                                    },
                                   ),
-                                  const TextSpan(text: ' and '),
-                                  TextSpan(
-                                    text: 'Privacy Policy',
-                                    style: const TextStyle(
-                                        color: Colors.blueAccent,
-                                        decoration: TextDecoration.underline),
+                                  Expanded(
+                                    child: Text.rich(
+                                      TextSpan(
+                                        text: 'By continuing, you agree to our ',
+                                        style: const TextStyle(color: Colors.black),
+                                        children: [
+                                          TextSpan(
+                                            text: 'EarthShare’s Terms of Use',
+                                            style: const TextStyle(
+                                                color: Colors.blueAccent,
+                                                decoration: TextDecoration.underline),
+                                          ),
+                                          const TextSpan(text: ' and '),
+                                          TextSpan(
+                                            text: 'Privacy Policy',
+                                            style: const TextStyle(
+                                                color: Colors.blueAccent,
+                                                decoration: TextDecoration.underline),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () async {
-                          if (_formKey.currentState!.validate() && agreeToTerms) {
-                            try {
-                              final credential = await FirebaseAuth.instance
-                                  .createUserWithEmailAndPassword(
-                                  email: emailController.text.trim(),
-                                  password: passwordController.text.trim());
-
-                              final userId = await _generateNewUserId();
-
-                              await FirebaseFirestore.instance
-                                  .collection('Users')
-                                  .doc(credential.user!.uid)
-                                  .set({
-                                'userId': userId,
-                                'name': nameController.text.trim(),
-                                'phone': phoneController.text.trim(),
-                                'email': emailController.text.trim(),
-                                'profile_Picture': avatarUrl,
-                              });
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Registration successful!")),
-                              );
-
-                              Navigator.pushNamed(context, '/emailLogin');
-                            } on FirebaseAuthException catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Auth Error: ${e.message}")),
-                              );
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Registration failed: $e")),
-                              );
-                            }
-                          } else if (!agreeToTerms) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Please agree to terms before registering.'),
+                              const SizedBox(height: 20),
+                              ElevatedButton(
+                                onPressed: _handleRegister,
+                                child: const Text('Register'),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                                  backgroundColor: Colors.lightGreenAccent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
                               ),
-                            );
-                          }
-                        },
-                        child: const Text('Register'),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
-                          backgroundColor: Colors.lightGreenAccent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                              const SizedBox(height: 16),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/emailLogin');
+                                },
+                                child: const Text(
+                                  'Already have an account? Login',
+                                  style: TextStyle(
+                                    color: Colors.blue,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              )
+                            ],
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/emailLogin');
-                        },
-                        child: const Text(
-                          'Already have an account? Login',
-                          style: TextStyle(
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      )
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
+
         ],
       ),
     );
   }
 
-  Widget _buildTextField(String label, {TextEditingController? controllerName, bool isObscure = false}) {
+  Widget _buildTextField(
+      String label, {
+        TextEditingController? controllerName,
+        bool isObscure = false,
+        String? Function(String?)? validator, // 新增参数
+      }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextFormField(
@@ -258,19 +304,15 @@ class _RegisterPageState extends State<RegisterPage> {
           filled: true,
           fillColor: Colors.blue[50],
           border: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.black),
+            borderSide: const BorderSide(color: Colors.black),
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter your $label';
-          }
-          return null;
-        },
+        validator: validator, // 使用外部传入的验证函数
       ),
     );
   }
+
 
   Widget _buildPasswordField(String label) {
     return Padding(

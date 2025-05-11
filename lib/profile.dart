@@ -79,22 +79,21 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 背景图
           Positioned.fill(
             child: Image.asset(
               'assets/images/profile_background.png',
               fit: BoxFit.cover,
             ),
           ),
-
           // 内容区
           SafeArea(
             child: SingleChildScrollView(
@@ -105,6 +104,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   children: [
                     buildTopSection(),
 
+                    // Points section
                     buildCardSection("My Points", [
                       buildFeatureButton(
                         label: "Voucher",
@@ -125,6 +125,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ]),
 
+                    // Store section
                     buildCardSection("My Store", [
                       buildFeatureButton(
                         label: "My Post",
@@ -137,6 +138,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ]),
 
+                    // Support section
                     buildCardSection("Support", [
                       buildFeatureButton(
                         label: "Contact Us",
@@ -163,7 +165,6 @@ class _ProfilePageState extends State<ProfilePage> {
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
-
 
   Widget buildTopSection() {
     return Padding(
@@ -211,14 +212,10 @@ class _ProfilePageState extends State<ProfilePage> {
                         ],
                       ),
                       const SizedBox(height: 4),
-
                       Text(
                         userId,
                         style: const TextStyle(fontSize: 15, color: Colors.grey),
                       ),
-
-
-
                     ],
                   ),
                 ),
@@ -269,10 +266,10 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: const EdgeInsets.all(16),
             child: GridView.count(
               shrinkWrap: true,
-              crossAxisCount: 2,
+              crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 3,
               mainAxisSpacing: 16,
               crossAxisSpacing: 16,
-              childAspectRatio: 1.6,
+              childAspectRatio: MediaQuery.of(context).size.width < 600 ? 1.2 : 1.5, // 适配屏幕尺寸
               physics: NeverScrollableScrollPhysics(),
               children: children,
             ),
@@ -311,6 +308,7 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
+
 
   Widget _buildBottomNavigationBar() {
     return Container(

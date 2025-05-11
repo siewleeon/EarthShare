@@ -20,11 +20,15 @@ class _SettingsPageState extends State<SettingsPage> {
 
   }
 
+
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(70),
+        preferredSize: Size.fromHeight(screenHeight * 0.1), // 根据屏幕高度动态调整
         child: AppBar(
           backgroundColor: const Color(0xFFCCFF66),
           elevation: 0,
@@ -74,73 +78,85 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           SafeArea(
-            child: Column(
-              children: [
-                const SizedBox(height: 30),
-                _buildSessionTile(
-                  icon: Icons.account_balance_wallet_outlined,
-                  title: 'Bank Accounts / Cards',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const BankAccountsPage(),
-                      ),
-                    );
-                  },
-                ),
-                _buildSessionTile(
-                  icon: Icons.email_outlined,
-                  title: 'Contact Us',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const ContactUsPage(),
-                      ),
-                    );
-                  },
-                ),
-                _buildSessionTile(
-                  icon: Icons.star_border,
-                  title: 'Rate Us & Feedback',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const RateFeedbackPage(),
-                      ),
-                    );
-                  },
-                ),
-                const Spacer(),
-                Center(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pushNamedAndRemoveUntil(
-                          context, '/emailLogin', (route) => false);
-                    },
-                    icon: const Icon(Icons.logout),
-                    label: const Text('Log out'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 30),
+                          _buildSessionTile(
+                            icon: Icons.account_balance_wallet_outlined,
+                            title: 'Bank Accounts / Cards',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const BankAccountsPage(),
+                                ),
+                              );
+                            },
+                          ),
+                          _buildSessionTile(
+                            icon: Icons.email_outlined,
+                            title: 'Contact Us',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ContactUsPage(),
+                                ),
+                              );
+                            },
+                          ),
+                          _buildSessionTile(
+                            icon: Icons.star_border,
+                            title: 'Rate Us & Feedback',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const RateFeedbackPage(),
+                                ),
+                              );
+                            },
+                          ),
+                          const Spacer(), // 如果还有空白也可移除或改用 SizedBox
+                          Center(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.pushNamedAndRemoveUntil(
+                                    context, '/emailLogin', (route) => false);
+                              },
+                              icon: const Icon(Icons.logout),
+                              label: const Text('Log out'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.redAccent,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 30),
+                        ],
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 30),
-              ],
+                );
+              },
             ),
+
           ),
         ],
       ),
     );
   }
+
 
 // Helper method to build each session tile
   Widget _buildSessionTile({
@@ -148,6 +164,7 @@ class _SettingsPageState extends State<SettingsPage> {
     required String title,
     required VoidCallback onTap,
   }) {
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       padding: const EdgeInsets.all(8),
