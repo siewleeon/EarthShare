@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-
-import 'Manage/manageContactMessagesPage.dart';
-
 import 'Manage/manageContactMessagesPage.dart';
 
 class AdminProfile extends StatefulWidget {
