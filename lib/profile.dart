@@ -6,6 +6,7 @@ import 'package:second_hand_shop/pages/contactUs_page.dart';
 import 'package:second_hand_shop/pages/points_page.dart';
 import './edit_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../pages/voucher_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
