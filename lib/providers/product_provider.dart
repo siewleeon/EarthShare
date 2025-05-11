@@ -1,34 +1,38 @@
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/product.dart';
 import '../repositories/product_repository.dart';
 
 class ProductProvider with ChangeNotifier {
   final ProductRepository _productRepository = ProductRepository();
   List<Product> _products = [];
+  Map<String, String> _productsIdToDocId = {};
   bool _isLoading = false;
   String? _error;
+  bool _isDescending = true;
 
-  // 获取所有产品
   List<Product> get products => [..._products];
-  
-  // 获取加载状态
   bool get isLoading => _isLoading;
-  
-  // 获取错误信息
   String? get error => _error;
 
-  // 加载所有产品
+  final CollectionReference _productsCollection = FirebaseFirestore.instance.collection('products');
+
   Future<void> fetchProducts() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
-    
+
     try {
-      final products = await _productRepository.getAllProducts();
-      _products = products;
-      debugPrint(products.toString());
+      final snapshot = await _productsCollection.get();
+      _products = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        final product = Product.fromMap(data, id: '');
+        _productsIdToDocId[product.id] = doc.id;
+        return product;
+      }).toList();
+      debugPrint('Products fetched: ${_products.length}');
     } catch (e) {
-      _error = '加载产品失败: $e';
+      _error = 'Failed to load products: $e';
       debugPrint(_error);
     } finally {
       _isLoading = false;
@@ -36,32 +40,109 @@ class ProductProvider with ChangeNotifier {
     }
   }
 
-  // 根据ID获取产品
+  Future<String> generateNextProductId() async {
+    try {
+      if (_products.isEmpty) {
+        await fetchProducts();
+      }
+
+      int maxNumber = 0;
+      for (var product in _products) {
+        final id = product.id;
+        if (id.startsWith('P') && id.length == 5) {
+          final numberPart = id.substring(1);
+          final number = int.tryParse(numberPart);
+          if (number != null && number > maxNumber) {
+            maxNumber = number;
+          }
+        }
+      }
+
+      final nextNumber = maxNumber + 1;
+      return 'P${nextNumber.toString().padLeft(4, '0')}';
+    } catch (e) {
+      debugPrint('Failed to generate product ID: $e');
+      return 'P0001';
+    }
+  }
+
+  Future<String> generateSmallestNonTakenProductId() async {
+    try {
+      if (_products.isEmpty) {
+        await fetchProducts();
+      }
+
+      final usedNumbers = _products
+          .map((product) {
+        final id = product.id;
+        if (id.startsWith('P') && id.length == 5) {
+          return int.tryParse(id.substring(1));
+        }
+        return null;
+      })
+          .where((number) => number != null)
+          .cast<int>()
+          .toSet();
+
+      for (int i = 1; i <= 9999; i++) {
+        if (!usedNumbers.contains(i)) {
+          return 'P${i.toString().padLeft(4, '0')}';
+        }
+      }
+
+      return 'P0001';
+    } catch (e) {
+      debugPrint('Failed to generate smallest non-taken product ID: $e');
+      return 'P0001';
+    }
+  }
+
+  void toggleSortProductsById() {
+    _isDescending = !_isDescending;
+    _products.sort((a, b) {
+      final aNumber = int.parse(a.id.substring(1));
+      final bNumber = int.parse(b.id.substring(1));
+      return _isDescending ? bNumber.compareTo(aNumber) : aNumber.compareTo(bNumber);
+    });
+    notifyListeners();
+  }
+
+  Future<Product?> getProductId(String productId) async {
+    final product = _products.firstWhere((p) => p.id == productId);
+    return product;
+  }
+
   Future<Product?> getProductById(String productId) async {
     try {
       return await _productRepository.getProductById(productId);
     } catch (e) {
-      debugPrint('获取产品详情失败: $e');
+      debugPrint('Failed to get product: $e');
       return null;
     }
   }
 
-  // 添加产品
+  List<Product> getUserProducts(String userId) {
+    return _products.where((p) => p.sellerId == userId).toList();
+  }
+
   Future<bool> addProduct(Product product) async {
     _isLoading = true;
     notifyListeners();
-    
+
     try {
-      final productId = await _productRepository.addProduct(product);
-      if (productId != null) {
-        final newProduct = product.copyWith(id: productId);
-        _products.add(newProduct);
-        notifyListeners();
-        return true;
+      if (_products.any((p) => p.id == product.id)) {
+        throw Exception('Product ID ${product.id} is already taken');
       }
-      return false;
+
+      final docRef = await _productsCollection.add(product.toMap());
+      final newProduct = product.copyWith(id: product.id);
+      _products.add(newProduct);
+      _productsIdToDocId[product.id] = docRef.id;
+      debugPrint('Added product with doc ID: ${docRef.id}');
+      notifyListeners();
+      return true;
     } catch (e) {
-      debugPrint('添加产品失败: $e');
+      debugPrint('Failed to add product: $e');
       return false;
     } finally {
       _isLoading = false;
@@ -69,24 +150,25 @@ class ProductProvider with ChangeNotifier {
     }
   }
 
-  // 更新产品
   Future<bool> updateProduct(Product product) async {
     _isLoading = true;
     notifyListeners();
-    
+
     try {
-      final success = await _productRepository.updateProduct(product);
-      if (success) {
-        final index = _products.indexWhere((p) => p.id == product.id);
-        if (index >= 0) {
-          _products[index] = product;
-          notifyListeners();
-        }
-        return true;
+      final docId = _productsIdToDocId[product.id];
+      if (docId == null) {
+        throw Exception('Document ID not found for product ${product.id}');
       }
-      return false;
+      await _productsCollection.doc(docId).update(product.toMap());
+      final index = _products.indexWhere((p) => p.id == product.id);
+      if (index >= 0) {
+        _products[index] = product;
+        notifyListeners();
+      }
+      debugPrint('Updated product with doc ID: $docId');
+      return true;
     } catch (e) {
-      debugPrint('更新产品失败: $e');
+      debugPrint('Failed to update product: $e');
       return false;
     } finally {
       _isLoading = false;
@@ -94,21 +176,23 @@ class ProductProvider with ChangeNotifier {
     }
   }
 
-  // 删除产品
   Future<bool> deleteProduct(String productId) async {
     _isLoading = true;
     notifyListeners();
-    
+
     try {
-      final success = await _productRepository.deleteProduct(productId);
-      if (success) {
-        _products.removeWhere((p) => p.id == productId);
-        notifyListeners();
-        return true;
+      final docId = _productsIdToDocId[productId];
+      if (docId == null) {
+        throw Exception('Document ID not found for product $productId');
       }
-      return false;
+      await _productsCollection.doc(docId).delete();
+      _products.removeWhere((p) => p.id == productId);
+      _productsIdToDocId.remove(productId);
+      debugPrint('Deleted product with doc ID: $docId');
+      notifyListeners();
+      return true;
     } catch (e) {
-      debugPrint('删除产品失败: $e');
+      debugPrint('Failed to delete product: $e');
       return false;
     } finally {
       _isLoading = false;
@@ -116,23 +200,21 @@ class ProductProvider with ChangeNotifier {
     }
   }
 
-  // 按类别筛选产品
   List<Product> getProductsByCategory(String category) {
     return _products.where((product) => product.productCategory == category).toList();
   }
 
-  // 按标签筛选产品
   List<Product> getProductsByTag(String tag) {
     return _products.where((product) => product.productCategory == tag).toList();
   }
 
-  // 搜索产品
+
   List<Product> searchProducts(String query) {
     final lowercaseQuery = query.toLowerCase();
     return _products.where((product) {
       return product.name.toLowerCase().contains(lowercaseQuery) ||
-             product.description.toLowerCase().contains(lowercaseQuery) ||
-             product.productCategory.toLowerCase().contains(lowercaseQuery);
+          product.description.toLowerCase().contains(lowercaseQuery) ||
+          product.productCategory.toLowerCase().contains(lowercaseQuery);
     }).toList();
   }
 

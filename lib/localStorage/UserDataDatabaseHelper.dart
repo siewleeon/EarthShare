@@ -15,7 +15,7 @@ class UserDataDatabaseHelper {
   // 打开数据库
   _initDatabase() async {
     String path = join(await getDatabasesPath(), 'user_data.db');
-    debugPrint("DB >>>>>>>>>>>>>"+path);
+    debugPrint("DB >>>>>>>>>>>>>" + path);
     return openDatabase(path, version: 2, onCreate: _onCreate);
   }
 
@@ -32,33 +32,6 @@ class UserDataDatabaseHelper {
         cvv TEXT
       );
     ''');
-
-    await db.execute('''
-      CREATE TABLE contact_us(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        email TEXT,
-        message TEXT,
-        timestamp TEXT
-      );
-    ''');
-
-    await db.execute('''
-      CREATE TABLE feedbacks(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        rating INTEGER,
-        comment TEXT,
-        timestamp TEXT
-      );
-    ''');
-
-    await db.execute('''
-      CREATE TABLE shipping_addresses(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        address TEXT,
-        timestamp TEXT
-      );
-    ''');
   }
 
   // 插入银行卡数据
@@ -67,6 +40,7 @@ class UserDataDatabaseHelper {
     print('Inserting bank account: $data');
     return await db.insert('bank_accounts', data);
   }
+
   Future<int> deleteBankAccount(int id) async {
     final db = await database;
     return await db.delete('bank_accounts', where: 'id = ?', whereArgs: [id]);
@@ -79,38 +53,16 @@ class UserDataDatabaseHelper {
   }
 
   // 获取指定用户的银行卡数据
-  Future<List<Map<String, dynamic>>> getBankAccountsByUserID(String userID) async {
+  Future<List<Map<String, dynamic>>> getBankAccountsByUserID(
+      String userID) async {
     final db = await database;
     return await db.query(
       'bank_accounts',
       where: 'userID = ?', // Condition to match userID
-      whereArgs: [userID],  // Pass userID as argument
+      whereArgs: [userID], // Pass userID as argument
     );
   }
 
-  // 插入 Contact Us 数据
-  Future<int> insertContactUs(Map<String, dynamic> data) async {
-    final db = await database;
-    return await db.insert('contact_us', data);
-  }
-
-  // 获取所有 Contact Us 数据
-  Future<List<Map<String, dynamic>>> getContactUsMessages() async {
-    final db = await database;
-    return await db.query('contact_us');
-  }
-
-  // 插入反馈数据
-  Future<int> insertFeedback(Map<String, dynamic> data) async {
-    final db = await database;
-    return await db.insert('feedbacks', data);
-  }
-
-  // 获取所有反馈数据
-  Future<List<Map<String, dynamic>>> getFeedbacks() async {
-    final db = await database;
-    return await db.query('feedbacks');
-  }
 
   // 插入新地址
   Future<int> insertAddress(String address) async {
@@ -124,7 +76,8 @@ class UserDataDatabaseHelper {
   // 获取所有保存的地址
   Future<List<String>> getSavedAddresses() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('shipping_addresses');
+    final List<Map<String, dynamic>> maps = await db.query(
+        'shipping_addresses');
     return List.generate(maps.length, (i) => maps[i]['address'] as String);
   }
 }

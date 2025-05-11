@@ -28,9 +28,12 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  intl: ^0.19.0
+  smooth_page_indicator: ^1.1.0  # 检查 pub.dev 获取最新版本
   flutter:
     sdk: flutter
-  
+
+  visibility_detector: ^0.2.2
   # 更新 Firebase 依赖版本以确保兼容性
   firebase_core: ^3.13.0
   firebase_auth: ^5.5.3
@@ -48,6 +51,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   uuid: ^4.5.1
+  fl_chart: ^0.64.0
 
 dev_dependencies:
   flutter_test:

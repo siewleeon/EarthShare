@@ -1,1 +1,0 @@
- C:\\Users\\Cha\\OneDrive\\Desktop\\test\\EarthShare\\.dart_tool\\flutter_build\\4bf9e934c95dc0fbe4e60127aa5b228a\\native_assets.json: 

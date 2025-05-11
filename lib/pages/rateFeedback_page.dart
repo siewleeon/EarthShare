@@ -1,5 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../localStorage/UserDataDatabaseHelper.dart';
 
 class RateFeedbackPage extends StatefulWidget {
   const RateFeedbackPage({super.key});
@@ -11,36 +11,55 @@ class RateFeedbackPage extends StatefulWidget {
 class _RateFeedbackPageState extends State<RateFeedbackPage> {
   final _formKey = GlobalKey<FormState>();
   final _commentController = TextEditingController();
-  final dbHelper = UserDataDatabaseHelper();
   int _rating = 5;
+  String _feedbackType = 'Suggestion';
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      await dbHelper.insertFeedback({
-        'rating': _rating,
-        'comment': _commentController.text.trim(),
-        'timestamp': DateTime.now().toString(),
-      });
+      try {
+        await FirebaseFirestore.instance.collection('feedbacks').add({
+          'rating': _rating,
+          'comment': _commentController.text.trim(),
+          'type': _feedbackType,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
 
-      await showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Thank You!'),
-          content: const Text('Your feedback has been submitted.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
+        await showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Thank You!'),
+            content: const Text('Your feedback has been submitted.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
 
-      _formKey.currentState!.reset();
-      _commentController.clear();
-      setState(() {
-        _rating = 5;
-      });
+        _formKey.currentState!.reset();
+        _commentController.clear();
+        setState(() {
+          _rating = 5;
+        });
+      } catch (e) {
+        print("Error submitting feedback: $e");
+
+        await showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Error'),
+            content: const Text('Something went wrong. Please try again later.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
     }
   }
 
@@ -122,6 +141,28 @@ class _RateFeedbackPageState extends State<RateFeedbackPage> {
                       }
                     },
                   ),
+
+                  const Text('Feedback Type:'),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: _feedbackType,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    items: ['Bug', 'Suggestion', 'UX', 'Other']
+                        .map((type) => DropdownMenuItem(
+                      value: type,
+                      child: Text(type),
+                    ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() => _feedbackType = val);
+                      }
+                    },
+                  ),
+
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _commentController,

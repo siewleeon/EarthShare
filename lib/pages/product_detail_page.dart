@@ -6,6 +6,7 @@ import '../widgets/bottom_nav_bar.dart';
 import '../providers/cart_provider.dart';
 import '../providers/product_provider.dart';  // 添加这行
 import 'cart_page.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class ProductDetailPage extends StatelessWidget {
   final String productId;  // 改为接收 productId
@@ -20,7 +21,7 @@ class ProductDetailPage extends StatelessWidget {
     return Consumer<ProductProvider>(
       builder: (context, productProvider, child) {
         return FutureBuilder<Product?>(
-          future: productProvider.getProductById(productId),
+          future: productProvider.getProductId(productId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Scaffold(
@@ -42,7 +43,7 @@ class ProductDetailPage extends StatelessWidget {
             if (product == null) {
               return const Scaffold(
                 body: Center(
-                  child: Text('产品未找到'),
+                  child: Text('Product Not Found!!'),
                 ),
               );
             }
@@ -172,7 +173,11 @@ class ProductDetailPage extends StatelessWidget {
     );
   }
 
+
+
   Widget _buildProductImage(Product product) {
+    final PageController _pageController = PageController();
+
     return Stack(
       children: [
         Container(
@@ -181,10 +186,12 @@ class ProductDetailPage extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.purple[100],
           ),
-          child: PageView(
-            children: [
-              Image.network(
-                product.imageUrl,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: product.imageId.length,
+            itemBuilder: (context, index) {
+              return Image.network(
+                product.imageId[index],
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
                   return const Center(child: Icon(Icons.broken_image));
@@ -194,47 +201,35 @@ class ProductDetailPage extends StatelessWidget {
                       ? child
                       : const Center(child: CircularProgressIndicator());
                 },
-              ),
-            ],
+              );
+            },
           ),
         ),
+
+        // 小圆点指示器
         Positioned(
-          top: 16,
-          right: 16,
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.public,
-              color: Colors.blue,
-            ),
-          ),
-        ),
-        Positioned(
-          left: 16,
           bottom: 16,
-          child: Text(
-            'x ${product.quantity.toStringAsFixed(0)}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: SmoothPageIndicator(
+              controller: _pageController,
+              count: product.imageId.length,
+              effect: WormEffect(
+                dotHeight: 10,
+                dotWidth: 10,
+                activeDotColor: Colors.white,
+                dotColor: Colors.white.withOpacity(0.4),
+              ),
             ),
           ),
         ),
+
       ],
     );
   }
+
+
 
   Widget _buildProductInfo(Product product) {
     return Padding(
@@ -259,6 +254,14 @@ class ProductDetailPage extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'RM ${product.price.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                    ),
+                    Text(
+                      'QTY ：${product.quantity.toStringAsFixed(0)}',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -293,7 +296,7 @@ class ProductDetailPage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Post Date: ${product.editTime}',
+            'Post Edit: ${product.editTime}',
             style: TextStyle(
               color: Colors.grey[600],
               fontSize: 14,
@@ -405,6 +408,7 @@ class ProductDetailPage extends StatelessWidget {
         fontSize: 14,
       ),
     );
+
   }
 
   void _showAddToCartSuccess(BuildContext context) {
@@ -475,22 +479,6 @@ class ProductDetailPage extends StatelessWidget {
 
   void _addToCart(BuildContext context, Product product) {
     final cart = Provider.of<CartProvider>(context, listen: false);
-    
-    // 检查购物车中该商品的当前数量
-    final currentQuantityInCart = cart.getItemQuantity(product.id);
-    
-    // 如果购物车中的数量已经达到商品的库存量，显示提示信息
-    if (currentQuantityInCart >= product.quantity) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Sorry, this product only left ${product.quantity}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-    
-    // 如果还未达到库存限制，则添加到购物车
     cart.addItem(
       product,
       quantity: 1,

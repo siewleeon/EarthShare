@@ -59,7 +59,6 @@ class CartRepository {
             id: productDoc.id,
             name: productData['product_Name'] ?? '',
             price: (productData['product_Price'] ?? 0.0).toDouble(),
-            imageUrl: productData['imageUrl'] ?? '',
             productCategory: productData['category'] ?? '',
             uploadTime: DateTime.parse(productData['product_Upload_'] ?? DateTime.now().toIso8601String()),
             editTime: DateTime.parse(productData['product_Edit_Time'] ?? DateTime.now().toIso8601String()),

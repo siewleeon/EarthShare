@@ -7,7 +7,6 @@ class Product {
   final String id;
   final String name;
   final double price;
-  final String imageUrl;
   final String productCategory;
   final DateTime uploadTime;
   final DateTime editTime;
@@ -21,7 +20,6 @@ class Product {
     required this.id,
     required this.name,
     required this.price,
-    required this.imageUrl,
     required this.productCategory,
     required this.uploadTime,
     required this.editTime,
@@ -37,7 +35,6 @@ class Product {
     String? id,
     String? name,
     double? price,
-    String? imageUrl,
     String? productCategory,
     DateTime? uploadTime,
     DateTime? editTime,
@@ -51,7 +48,6 @@ class Product {
       id: id ?? this.id,
       name: name ?? this.name,
       price: price ?? this.price,
-      imageUrl: imageUrl ?? this.imageUrl,
       productCategory: productCategory ?? this.productCategory,
       uploadTime: uploadTime ?? this.uploadTime,
       editTime: editTime ?? this.editTime,
@@ -64,28 +60,16 @@ class Product {
   }
 
   // Convert from Firestore
-  factory Product.fromMap(Map<String, dynamic> map) {
-    DateTime parseDateTime(dynamic value) {
-      if (value is Timestamp) {
-        return value.toDate();
-      } else if (value is String) {
-        return DateTime.parse(value);
-      }
-      return DateTime.now();
-    }
-
+  factory Product.fromMap(Map<String, dynamic> map , {required String id}) {
     return Product(
-      id: map['id'] ?? '',
+      id: map['product_ID'] ?? '',
       name: map['product_Name'] ?? '',
       price: (map['product_Price'] ?? 0.0).toDouble(),
-      imageUrl: (map['images'] as List<dynamic>?)?.isNotEmpty == true
-          ? (map['images'] as List<dynamic>).first.toString()
-          : '',
-      uploadTime: parseDateTime(map['product_Upload_']),
-      editTime: parseDateTime(map['product_Edit_Time']),
+      uploadTime: (map['product_Upload_Time'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      editTime: (map['product_Edit_Time'] as Timestamp?)?.toDate() ?? DateTime.now(),
       quantity: map['product_Quantity'] ?? 0,
       productCategory: map['product_Category'] ?? '',
-      sellerId: map['seller_ID'] ?? '',
+      sellerId: map['product_SellerID'] ?? '',
       imageId: List<String>.from(map['images'] ?? []),
       description: map['product_Description'] ?? '',
       degreeOfNewness: map['degree_of_Newness'] ?? 1,
@@ -95,14 +79,14 @@ class Product {
   // Convert to Firestore
   Map<String, dynamic> toMap() {
     return {
-      'product_ID': id,
+      'product_ID':id,
       'product_Name': name,
       'product_Price': price,
-      'product_Upload_': uploadTime.toIso8601String(),
-      'product_Edit_Time': editTime.toIso8601String(),
+      'product_Upload_Time': Timestamp.fromDate(uploadTime),
+      'product_Edit_Time': Timestamp.fromDate(editTime),
       'product_Quantity': quantity,
       'product_Category': productCategory,
-      'seller_ID': sellerId,
+      'product_SellerID': sellerId,
       'images': imageId,
       'product_Description': description,
       'degree_of_Newness': degreeOfNewness,
