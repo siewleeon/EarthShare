@@ -11,6 +11,30 @@ class BankAccountsPage extends StatefulWidget {
 }
 
 class _BankAccountsPageState extends State<BankAccountsPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Bank Accounts'),
+        backgroundColor: Colors.green,
+      ),
+      body: _bankAccounts.isEmpty
+          ? const Center(
+              child: Text('No bank accounts added yet'),
+            )
+          : ListView.builder(
+              itemCount: _bankAccounts.length,
+              itemBuilder: (context, index) {
+                return _buildCardTile(_bankAccounts[index]);
+              },
+            ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddCardDialog,
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
   final dbHelper = UserDataDatabaseHelper();
   List<Map<String, dynamic>> _bankAccounts = [];
   String userID = '';
@@ -19,6 +43,7 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
   final _cardNumberController = TextEditingController();
   final _cardHolderController = TextEditingController();
   final _expiryDateController = TextEditingController();
+  final _cvvController = TextEditingController();
 
   @override
   void initState() {
@@ -64,6 +89,7 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
           'cardNumber': _cardNumberController.text.trim(),
           'cardHolder': _cardHolderController.text.trim(),
           'expiryDate': _expiryDateController.text.trim(),
+          'cvv': _cvvController.text.trim(),
         };
 
         // Insert the new bank account into the database
@@ -138,6 +164,16 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
                       ? 'Enter expiry date like 12/25'
                       : null,
                 ),
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: _cvvController,
+                  decoration: const InputDecoration(labelText: 'CVV', border: OutlineInputBorder()),
+                  keyboardType: TextInputType.number,
+                  obscureText: true, // 安全考虑，隐藏 CVV
+                  maxLength: 4, // 大多数卡的 CVV 是 3-4 位
+                  validator: (value) => value == null || value.length < 3 ? 'Enter a valid CVV' : null,
+                ),
                 const SizedBox(height: 24),
 
                 ElevatedButton(
@@ -200,159 +236,13 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
               children: [
                 Text(account['bankName'], style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(_obscureCard(account['cardNumber']), style: const TextStyle(fontSize: 12)),
+                // 不显示 CVV，出于安全考虑
               ],
             ),
           ),
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.red),
             onPressed: () => _confirmDelete(account['id']),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(80),
-        child: AppBar(
-          backgroundColor: const Color(0xFFCCFF66),
-          elevation: 0,
-          centerTitle: true,
-          title: const Text(
-            'Bank Accounts/Cards',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          leading: Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 4,
-                    offset: Offset(2, 2),
-                  ),
-                ],
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-          ),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(30),
-              bottomRight: Radius.circular(30),
-            ),
-          ),
-        ),
-      ),
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/default_background.png',
-              fit: BoxFit.cover,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-
-                // 添加账户按钮
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: GestureDetector(
-                    onTap: _showAddCardDialog,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      decoration: BoxDecoration(
-                        color: Color(0xFFe0ffe0), // 柔和绿色
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 8,
-                            offset: Offset(2, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.add_circle_outline, size: 30, color: Colors.green[800]),
-                          const SizedBox(width: 12),
-                          Text(
-                            "Add New Bank Account/Card",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.green[900],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // 如果有银行账户才显示列表
-                if (_bankAccounts.isNotEmpty) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Current Bank Account & Card',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.black87,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Divider(thickness: 1.2),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: _bankAccounts.length,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemBuilder: (context, index) {
-                        return _buildCardTile(_bankAccounts[index]);
-                      },
-                    ),
-                  ),
-                ] else
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        'No bank accounts added yet.',
-                        style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-
           ),
         ],
       ),

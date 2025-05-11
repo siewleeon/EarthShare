@@ -2,19 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:second_hand_shop/models/cart.dart';
 import '../providers/transaction_provider.dart';
-import '../models/transaction.dart';
+import '../models/transaction.dart' as trans_model;
 import '../providers/product_provider.dart';
 import '../models/product.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
 
+  Future<String?> _getCurrentUserId() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return null;
+    
+    final doc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentUser.uid)
+        .get();
+    
+    if (doc.exists) {
+      final data = doc.data() as Map<String, dynamic>;
+      return data['userId'];
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     // 在构建页面时加载交易数据
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
-      transactionProvider.loadUserTransactions('user1'); // 使用小写的 user1
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final userId = await _getCurrentUserId();
+      if (userId != null) {
+        if (context.mounted) {
+          final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
+          transactionProvider.loadUserTransactions(userId);
+        }
+      }
     });
 
     return Scaffold(
@@ -68,7 +91,7 @@ class HistoryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderCard(BuildContext context, Transaction transaction, int orderNumber) {
+  Widget _buildOrderCard(BuildContext context, trans_model.Transaction transaction, int orderNumber) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(
