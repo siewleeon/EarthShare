@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'addUser_page.dart';
 import 'editUser_page.dart';
 
 class ManageUserPage extends StatefulWidget {
@@ -109,47 +110,74 @@ class _ManageUserPageState extends State<ManageUserPage> {
 
   // 删除用户
   Future<void> _deleteUser(String uid) async {
+    bool confirm = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Confirm Delete"),
+        content: const Text("Are you sure you want to delete this user?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text("Delete"),
+          ),
+        ],
+      ),
+    );
+
+    if (!confirm) return;
+
+    // show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
     try {
-      // 先删除Firestore中的用户数据
       await _firestore.collection('Users').doc(uid).delete();
 
-      // 然后删除Firebase Authentication中的用户
-      await FirebaseAuth.instance.currentUser!.delete();
+      // ⚠️ 不建议直接调用 currentUser!.delete()，因为它是当前登录的 admin，不是要删除的 user
+      // await FirebaseAuth.instance.currentUser!.delete();
+
+      // 关闭 loading
+      Navigator.of(context).pop();
 
       setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('User deleted successfully')),
       );
     } catch (e) {
+      Navigator.of(context).pop(); // close loading
       print("Error deleting user: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to delete user')),
+      );
     }
   }
 
   // 编辑用户信息
   Future<void> _editUser(Map<String, dynamic> user) async {
-    Navigator.push(
+    // 跳转并等待返回，然后刷新界面
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => EditUserPage(user: user),
       ),
     );
+    setState(() {});
   }
 
+  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Manage Users'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              setState(() {
-                _searchQuery = _searchController.text.trim();
-              });
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -157,9 +185,15 @@ class _ManageUserPageState extends State<ManageUserPage> {
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.trim();
+                });
+              },
               decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search),
                 labelText: 'Search Users',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.clear),
                   onPressed: () {
@@ -172,6 +206,7 @@ class _ManageUserPageState extends State<ManageUserPage> {
               ),
             ),
           ),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -182,12 +217,10 @@ class _ManageUserPageState extends State<ManageUserPage> {
                     _searchBy = value!;
                   });
                 },
-                items: _searchOptions
-                    .map((field) => DropdownMenuItem(
+                items: _searchOptions.map((field) => DropdownMenuItem(
                   value: field,
                   child: Text('Search by ${field[0].toUpperCase()}${field.substring(1)}'),
-                ))
-                    .toList(),
+                )).toList(),
               ),
               DropdownButton<String>(
                 value: _sortBy,
@@ -196,12 +229,10 @@ class _ManageUserPageState extends State<ManageUserPage> {
                     _sortBy = value!;
                   });
                 },
-                items: _sortOptions
-                    .map((field) => DropdownMenuItem(
+                items: _sortOptions.map((field) => DropdownMenuItem(
                   value: field,
                   child: Text('Sort by ${field[0].toUpperCase()}${field.substring(1)}'),
-                ))
-                    .toList(),
+                )).toList(),
               ),
             ],
           ),
@@ -230,14 +261,13 @@ class _ManageUserPageState extends State<ManageUserPage> {
                             : const CircleAvatar(child: Icon(Icons.person)),
                         title: Text(user['name']),
                         subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('User ID: ${user['userId']}'),
-                          Text('Email: ${user['email']}'),
-                        ],
-                      ),
-
-                      trailing: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('User ID: ${user['userId']}'),
+                            Text('Email: ${user['email']}'),
+                          ],
+                        ),
+                        trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
@@ -263,6 +293,7 @@ class _ManageUserPageState extends State<ManageUserPage> {
           ),
         ],
       ),
+      floatingActionButton: _buildAddButton(), // ✅ 使用浮动按钮替代 Positioned
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
@@ -290,6 +321,40 @@ class _ManageUserPageState extends State<ManageUserPage> {
             _buildNavItem(Icons.store, "Products", false),
             _buildNavItem(Icons.insert_chart, "Report", false),
           ],
+        ),
+      ),
+    );
+  }
+  Widget _buildAddButton() {
+    return Builder(
+      builder: (context) => GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddUserPage(),
+            ),
+          );
+        },
+        child: Container(
+          width: 44,
+          height: 44,
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withValues(alpha: 0.3),
+                spreadRadius: 2,
+                blurRadius: 5,
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.add,
+            color: Colors.white,
+          ),
         ),
       ),
     );

@@ -10,117 +10,150 @@ class ManageContactMessagesPage extends StatefulWidget {
 
 class _ManageContactMessagesPageState extends State<ManageContactMessagesPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+  String _searchQuery = '';
+  List<Map<String, dynamic>> _allMessages = [];
+  List<Map<String, dynamic>> _filteredMessages = [];
   // 获取所有联系消息
-  Future<List<Map<String, dynamic>>> _fetchMessages() async {
+  @override
+  void initState() {
+    super.initState();
+    _fetchMessages();
+  }
+
+  Future<void> _fetchMessages() async {
     try {
-      QuerySnapshot querySnapshot = await _firestore.collection('contactMessages').get();
-      return querySnapshot.docs.map((doc) {
-        return {
-          'id': doc.id,
-          'name': doc['name'],
-          'email': doc['email'],
-          'message': doc['message'],
-          'timestamp': doc['timestamp'],
-          'status': doc['status'],
-        };
+      final snapshot = await _firestore.collection('contactMessages').get();
+      final messages = snapshot.docs.map((doc) => {
+        'id': doc.id,
+        'name': doc['name'],
+        'email': doc['email'],
+        'message': doc['message'],
+        'timestamp': doc['timestamp'],
+        'status': doc['status'],
       }).toList();
+
+      setState(() {
+        _allMessages = messages;
+        _filteredMessages = messages;
+      });
     } catch (e) {
       print("Error fetching messages: $e");
-      return [];
     }
+  }
+
+  void _filterMessages(String query) {
+    setState(() {
+      _searchQuery = query;
+      _filteredMessages = _allMessages.where((msg) {
+        final name = msg['name'].toString().toLowerCase();
+        final email = msg['email'].toString().toLowerCase();
+        final message = msg['message'].toString().toLowerCase();
+        return name.contains(query.toLowerCase()) ||
+            email.contains(query.toLowerCase()) ||
+            message.contains(query.toLowerCase());
+      }).toList();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Manage Contact Messages'),
         backgroundColor: Colors.orangeAccent,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 4,
+                  offset: Offset(2, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(30),
+            bottomRight: Radius.circular(30),
+          ),
+        ),
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _fetchMessages(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return const Center(child: Text('Error fetching messages'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No messages found.'));
-          } else {
-            List<Map<String, dynamic>> messages = snapshot.data!;
-            return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: messages.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final message = messages[index];
-                final timestamp = (message['timestamp'] as Timestamp).toDate();
-                final formattedTime =
-                    '${timestamp.year}-${timestamp.month.toString().padLeft(2, '0')}-${timestamp.day.toString().padLeft(2, '0')}';
+      body: Column(
+        children: [
+          // 🔍 SearchBar
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: TextField(
+              onChanged: _filterMessages,
+              decoration: InputDecoration(
+                hintText: 'Search messages...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+              ),
+            ),
+          ),
 
-                return InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MessageDetailPage(
-                          messageId: message['id'],
-                          name: message['name'],
-                          email: message['email'],
-                          messageContent: message['message'],
-                          timestamp: message['timestamp'],
-                          status: message['status'],
-                        ),
-                      ),
-                    ).then((refresh) {
-                      if (refresh == true) setState(() {});
-                    });
-                  },
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    elevation: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  message['name'],
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold, fontSize: 16),
-                                ),
-                              ),
-                              _buildStatusChip(message['status']),
-                              const SizedBox(width: 4),
-                              const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            message['message'],
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Colors.black87),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Received: $formattedTime',
-                            style: const TextStyle(color: Colors.grey, fontSize: 12),
-                          ),
-                        ],
-                      ),
+          // 📋 Message List
+          Expanded(
+            child: _filteredMessages.isEmpty
+                ? const Center(child: Text('No matching messages found.'))
+                : ListView.builder(
+              itemCount: _filteredMessages.length,
+              itemBuilder: (context, index) {
+                final message = _filteredMessages[index];
+                final timestamp = (message['timestamp'] as Timestamp).toDate();
+                final formattedTime = '${timestamp.year}-${timestamp.month.toString().padLeft(2, '0')}-${timestamp.day.toString().padLeft(2, '0')}';
+
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 2,
+                  child: ListTile(
+                    title: Text(message['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(message['message'], maxLines: 1, overflow: TextOverflow.ellipsis),
+                        const SizedBox(height: 4),
+                        Text('Received: $formattedTime', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                      ],
                     ),
+                    trailing: _buildStatusChip(message['status']),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MessageDetailPage(
+                            messageId: message['id'],
+                            name: message['name'],
+                            email: message['email'],
+                            messageContent: message['message'],
+                            timestamp: message['timestamp'],
+                            status: message['status'],
+                          ),
+                        ),
+                      ).then((refresh) {
+                        if (refresh == true) _fetchMessages();
+                      });
+                    },
                   ),
                 );
               },
-            );
-          }
-        },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -276,6 +309,32 @@ class _MessageDetailPageState extends State<MessageDetailPage> {
 
         title: const Text('Message Details'),
         backgroundColor: Colors.orangeAccent,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 4,
+                  offset: Offset(2, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(30),
+            bottomRight: Radius.circular(30),
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

@@ -102,12 +102,7 @@ class _ListPageState extends State<ManageVoucherList> {
       ),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.grey),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
+
           const SizedBox(width: 8),
           Expanded(
             child: TextField(

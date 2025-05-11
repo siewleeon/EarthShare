@@ -69,13 +69,10 @@ class _SalesReportState extends State<SalesReport> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+
         title: const Text('Sales Report'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+
       ),
       body: SafeArea(
         child: Column(

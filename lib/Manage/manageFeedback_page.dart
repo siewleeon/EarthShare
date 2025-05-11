@@ -10,22 +10,57 @@ class ManageFeedbackPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('User Feedbacks'),
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.green.shade600,
+        elevation: 4,
+        centerTitle: true,
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 16),
-          const Text(
-            'Ratings Summary',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          const SizedBox(height: 220, child: FeedbackRatingChart()),
-          const SizedBox(height: 16),
-          const Divider(),
-          const SizedBox(height: 8),
-          const Expanded(child: FeedbackList()),
-        ],
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '📊 Ratings Summary',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              height: 220,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 6,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: FeedbackRatingChart(),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: const [
+                Text(
+                  '📝 User Feedbacks',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const Divider(),
+            const SizedBox(height: 8),
+            const Expanded(child: FeedbackList()),
+          ],
+        ),
       ),
     );
   }
