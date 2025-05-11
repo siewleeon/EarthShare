@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'Manage/manageContactMessagesPage.dart';
+import 'Manage/manageFeedback_page.dart';
 
 class AdminProfile extends StatefulWidget {
   const AdminProfile({super.key});
@@ -70,7 +71,7 @@ class _ProfilePageState extends State<AdminProfile>
           // Change page to Admin Login Page
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const ManageContactMessagesPage()),
+            MaterialPageRoute(builder: (context) => const AdminFeedbackListPage()),
           );
           break;
         }

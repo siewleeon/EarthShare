@@ -294,7 +294,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
           Container(
             padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: iconColor,
+              color: iconColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, size: 30, color: iconColor),

@@ -628,4 +628,7 @@
       </list>
     </option>
   </component>
+  <component name="ProjectType">
+    <option name="id" value="io.flutter" />
+  </component>
 </project>

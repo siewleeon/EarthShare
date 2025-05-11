@@ -129,6 +129,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
                     ],
                   ),
                   const SizedBox(height: 24),
+                  // Login Button
                   ElevatedButton(
                     onPressed: isLoading ? null : loginWithPhoneAndPassword,
                     style: ElevatedButton.styleFrom(
@@ -138,10 +139,14 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                      elevation: 5,
                     ),
                     child: isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Login'),
+                        : const Text(
+                      'Login',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Row(

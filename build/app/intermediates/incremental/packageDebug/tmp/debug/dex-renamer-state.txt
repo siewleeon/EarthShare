@@ -1,11 +1,11 @@
-#Sun May 11 05:37:44 MYT 2025
-base.0=C\:\\Users\\Cha\\OneDrive\\Desktop\\test\\EarthShare\\build\\app\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
-base.1=C\:\\Users\\Cha\\OneDrive\\Desktop\\test\\EarthShare\\build\\app\\intermediates\\dex\\debug\\mergeLibDexDebug\\0\\classes.dex
-base.2=C\:\\Users\\Cha\\OneDrive\\Desktop\\test\\EarthShare\\build\\app\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
-base.3=C\:\\Users\\Cha\\OneDrive\\Desktop\\test\\EarthShare\\build\\app\\intermediates\\dex\\debug\\mergeProjectDexDebug\\1\\classes.dex
-base.4=C\:\\Users\\Cha\\OneDrive\\Desktop\\test\\EarthShare\\build\\app\\intermediates\\dex\\debug\\mergeProjectDexDebug\\5\\classes.dex
-base.5=C\:\\Users\\Cha\\OneDrive\\Desktop\\test\\EarthShare\\build\\app\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes2.dex
-base.6=C\:\\Users\\Cha\\OneDrive\\Desktop\\test\\EarthShare\\build\\app\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes3.dex
+#Sun May 11 18:37:10 MYT 2025
+base.0=C\:\\Users\\MyMSI\\Desktop\\StudioProjects\\EarthShareApp\\build\\app\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
+base.1=C\:\\Users\\MyMSI\\Desktop\\StudioProjects\\EarthShareApp\\build\\app\\intermediates\\dex\\debug\\mergeLibDexDebug\\0\\classes.dex
+base.2=C\:\\Users\\MyMSI\\Desktop\\StudioProjects\\EarthShareApp\\build\\app\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
+base.3=C\:\\Users\\MyMSI\\Desktop\\StudioProjects\\EarthShareApp\\build\\app\\intermediates\\dex\\debug\\mergeProjectDexDebug\\1\\classes.dex
+base.4=C\:\\Users\\MyMSI\\Desktop\\StudioProjects\\EarthShareApp\\build\\app\\intermediates\\dex\\debug\\mergeProjectDexDebug\\5\\classes.dex
+base.5=C\:\\Users\\MyMSI\\Desktop\\StudioProjects\\EarthShareApp\\build\\app\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes2.dex
+base.6=C\:\\Users\\MyMSI\\Desktop\\StudioProjects\\EarthShareApp\\build\\app\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes3.dex
 path.0=classes.dex
 path.1=0/classes.dex
 path.2=0/classes.dex
