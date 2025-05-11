@@ -8,8 +8,17 @@ import '../widgets/bottom_nav_bar.dart';
 import '../pages/order_summary_page.dart';
 import '../pages/history_page.dart';  
 
-class CartPage extends StatelessWidget {
+class CartPage extends StatefulWidget  {
   const CartPage({super.key});
+  @override
+  State<CartPage> createState() => _CartPageState();
+}
+
+class _CartPageState extends State<CartPage> {
+  String searchQuery = '';
+  String selectedCategory = '全部';
+
+  final List<String> categories = ['全部', '电器', '食品'];
 
   @override
   Widget build(BuildContext context) {
@@ -275,21 +284,101 @@ class CartPage extends StatelessWidget {
   }
 
   Widget _buildCartItems(BuildContext context, CartProvider cart) {
-    final items = cart.items.values.toList();
+    final allItems = cart.items.values.toList();
+
+    final filteredItems = allItems.where((item) {
+      final matchesSearch = item.product.name.toLowerCase().contains(searchQuery.toLowerCase());
+      final matchesCategory = selectedCategory == '全部' || item.product.productCategory == selectedCategory;
+      return matchesSearch && matchesCategory;
+    }).toList();
+
     return Column(
       children: [
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return _buildCartItem(context, item, cart);
-            },
+        _buildSearchAndFilterUI(),
+        if (filteredItems.isEmpty)
+          Expanded(
+            child: Center(
+              child: Text(
+                '无此产品',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ),
+          )
+        else
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: filteredItems.length,
+              itemBuilder: (context, index) {
+                final item = filteredItems[index];
+                return _buildCartItem(context, item, cart);
+              },
+            ),
           ),
-        ),
         _buildCartSummary(context, cart),
       ],
+    );
+  }
+
+  Widget _buildSearchAndFilterUI() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        children: [
+          TextField(
+            decoration: InputDecoration(
+              hintText: '搜索商品名称',
+              prefixIcon: const Icon(Icons.search),
+              filled: true,
+              fillColor: Colors.grey[100],
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            onChanged: (value) {
+              setState(() {
+                searchQuery = value;
+              });
+            },
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 40,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: categories.length,
+              itemBuilder: (context, index) {
+                final category = categories[index];
+                final isSelected = selectedCategory == category;
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(category),
+                    selected: isSelected,
+                    onSelected: (_) {
+                      setState(() {
+                        selectedCategory = category;
+                      });
+                    },
+                    selectedColor: Colors.green,
+                    backgroundColor: Colors.grey[200],
+                    labelStyle: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -317,7 +406,7 @@ class CartPage extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Image.network(
-              item.product.imageId.first,
+              item.product.imageUrl,
               width: 80,
               height: 80,
               fit: BoxFit.cover,
@@ -346,24 +435,70 @@ class CartPage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-
                     Row(
                       children: [
-                        Text(
-                          'QTY:${item.quantity}',
-                          style: const TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.remove, size: 12),
+                                onPressed: () {
+                                  if (item.quantity > 1) {
+                                    cart.updateItemQuantity(item.product.id, item.quantity - 1);
+                                  } else {
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        title: const Text('confirm delete'),
+                                        content: const Text('do u sure u want to delete?'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(ctx),
+                                            child: const Text('cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              cart.removeItem(item.product.id);
+                                              Navigator.pop(ctx);
+                                            },
+                                            child: const Text('confirm'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                },
+                                color: Colors.grey[600],
+                              ),
+                              Text(
+                                '${item.quantity}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.add, size: 12),
+                                onPressed: () {
+                                  cart.updateItemQuantity(item.product.id, item.quantity + 1);
+                                },
+                                color: Colors.grey[600],
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'RM${(item.product.price * item.quantity).toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        // const SizedBox(width: 8),
+                        // Text(
+                        //   'RM${(item.product.price * item.quantity).toStringAsFixed(2)}',
+                        //   style: const TextStyle(
+                        //     color: Colors.green,
+                        //     fontWeight: FontWeight.bold,
+                        //   ),
+                        // ),
                       ],
                     ),
                   ],
