@@ -114,7 +114,7 @@ class ProductProvider with ChangeNotifier {
 
   Future<Product?> getProductById(String productId) async {
     try {
-      return await _productRepository.getProductById(productId);
+      return await _productRepository.getProductById2(productId);
     } catch (e) {
       debugPrint('Failed to get product: $e');
       return null;
