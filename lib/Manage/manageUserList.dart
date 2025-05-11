@@ -172,7 +172,6 @@ class _ManageUserPageState extends State<ManageUserPage> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
