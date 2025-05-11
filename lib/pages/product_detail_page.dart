@@ -479,6 +479,22 @@ class ProductDetailPage extends StatelessWidget {
 
   void _addToCart(BuildContext context, Product product) {
     final cart = Provider.of<CartProvider>(context, listen: false);
+
+    // 检查购物车中该商品的当前数量
+    final currentQuantityInCart = cart.getItemQuantity(product.id);
+
+    // 如果购物车中的数量已经达到商品的库存量，显示提示信息
+    if (currentQuantityInCart >= product.quantity) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Sorry, this product only left ${product.quantity}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // 如果还未达到库存限制，则添加到购物车
     cart.addItem(
       product,
       quantity: 1,
