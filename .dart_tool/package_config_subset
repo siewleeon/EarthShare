@@ -170,6 +170,10 @@ image_picker_windows
 2.19
 file:///C:/Users/MyMSI/AppData/Local/Pub/Cache/hosted/pub.dev/image_picker_windows-0.2.1+1/
 file:///C:/Users/MyMSI/AppData/Local/Pub/Cache/hosted/pub.dev/image_picker_windows-0.2.1+1/lib/
+intl
+3.0
+file:///C:/Users/MyMSI/AppData/Local/Pub/Cache/hosted/pub.dev/intl-0.19.0/
+file:///C:/Users/MyMSI/AppData/Local/Pub/Cache/hosted/pub.dev/intl-0.19.0/lib/
 leak_tracker
 3.2
 file:///C:/Users/MyMSI/AppData/Local/Pub/Cache/hosted/pub.dev/leak_tracker-10.0.8/
@@ -274,6 +278,10 @@ shared_preferences_windows
 3.3
 file:///C:/Users/MyMSI/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences_windows-2.4.1/
 file:///C:/Users/MyMSI/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences_windows-2.4.1/lib/
+smooth_page_indicator
+2.12
+file:///C:/Users/MyMSI/AppData/Local/Pub/Cache/hosted/pub.dev/smooth_page_indicator-1.2.1/
+file:///C:/Users/MyMSI/AppData/Local/Pub/Cache/hosted/pub.dev/smooth_page_indicator-1.2.1/lib/
 source_span
 3.1
 file:///C:/Users/MyMSI/AppData/Local/Pub/Cache/hosted/pub.dev/source_span-1.10.1/
@@ -338,6 +346,10 @@ vector_math
 2.14
 file:///C:/Users/MyMSI/AppData/Local/Pub/Cache/hosted/pub.dev/vector_math-2.1.4/
 file:///C:/Users/MyMSI/AppData/Local/Pub/Cache/hosted/pub.dev/vector_math-2.1.4/lib/
+visibility_detector
+2.12
+file:///C:/Users/MyMSI/AppData/Local/Pub/Cache/hosted/pub.dev/visibility_detector-0.2.2/
+file:///C:/Users/MyMSI/AppData/Local/Pub/Cache/hosted/pub.dev/visibility_detector-0.2.2/lib/
 vm_service
 3.3
 file:///C:/Users/MyMSI/AppData/Local/Pub/Cache/hosted/pub.dev/vm_service-14.3.1/
