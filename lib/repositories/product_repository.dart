@@ -45,7 +45,25 @@ class ProductRepository {
       return null;
     }
   }
+  // 获取单个产品
+  Future<Product?> getProductById2(String productId) async {
+    try {
+      // 使用 where 查询来匹配 product_ID 字段
+      final QuerySnapshot querySnapshot = await _productsCollection
+          .where('product_ID', isEqualTo: productId)
+          .limit(1)
+          .get();
 
+      if (querySnapshot.docs.isEmpty) return null;
+
+      final doc = querySnapshot.docs.first;
+      final data = doc.data() as Map<String, dynamic>;
+      return Product.fromMap(data, id: doc.id);  // 传入文档ID作为必需参数
+    } catch (e) {
+      debugPrint('获取产品详情失败: $e');
+      return null;
+    }
+  }
 
 
   // 添加产品
@@ -63,6 +81,31 @@ class ProductRepository {
   Future<bool> updateProduct(Product product) async {
     try {
       await _productsCollection.doc(product.id).update(product.toMap());
+      return true;
+    } catch (e) {
+      debugPrint('更新产品失败: $e');
+      return false;
+    }
+  }
+  Future<bool> updateProduct2(Product product) async {
+    try {
+      // 先通过 product_ID 字段查找对应的文档
+      final QuerySnapshot querySnapshot = await _productsCollection
+          .where('product_ID', isEqualTo: product.id)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        debugPrint('未找到产品文档: ${product.id}');
+        return false;
+      }
+
+      // 获取实际的文档ID
+      final docId = querySnapshot.docs.first.id;
+
+      // 使用实际的文档ID进行更新
+      await _productsCollection.doc(docId).update(product.toMap());
+      debugPrint('成功更新产品: ${product.id}, docId: $docId');
       return true;
     } catch (e) {
       debugPrint('更新产品失败: $e');

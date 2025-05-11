@@ -24,7 +24,7 @@ class PaymentPage extends StatefulWidget {
 class _PaymentPageState extends State<PaymentPage> {
   String _selectedPaymentMethod = 'CARD';
   final _formKey = GlobalKey<FormState>();
-  
+
   final _cardNameController = TextEditingController();
   final _cardNumberController = TextEditingController();
   final _cardMonthController = TextEditingController();
@@ -45,7 +45,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
     final UID = currentUser.uid;
     final doc = await FirebaseFirestore.instance.collection('Users').doc(UID).get();
-    
+
     if (doc.exists) {
       final data = doc.data() as Map<String, dynamic>;
       _userID = data['userId'] ?? '';
@@ -58,7 +58,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
   Future<void> _loadBankDetails() async {
     if (_userID.isEmpty) return;
-    
+
     final accounts = await _dbHelper.getBankAccountsByUserID(_userID);
     setState(() {
       _bankAccounts = accounts;
@@ -72,14 +72,14 @@ class _PaymentPageState extends State<PaymentPage> {
   void _updateCardFields(Map<String, dynamic> account) {
     _cardNameController.text = account['cardHolder'] ?? '';
     _cardNumberController.text = account['cardNumber'] ?? '';
-    
+
     // 处理过期日期
     final expiryDate = account['expiryDate'] ?? '';
     if (expiryDate.length >= 4) {
       _cardMonthController.text = expiryDate.substring(0, 2);
       _cardYearController.text = expiryDate.substring(3, 5);
     }
-    
+
     _cvvController.text = account['cvv'] ?? '';
   }
 
@@ -576,19 +576,19 @@ class _PaymentPageState extends State<PaymentPage> {
                 items: cart.items.values.toList(),
                 totalAmount: widget.finalAmount,
                 status: trans_model.TransactionStatus.shipped,
-                paymentMethod: _selectedPaymentMethod == 'CARD' 
-                    ? trans_model.PaymentMethod.creditCard 
+                paymentMethod: _selectedPaymentMethod == 'CARD'
+                    ? trans_model.PaymentMethod.creditCard
                     : trans_model.PaymentMethod.cashOnDelivery,
                 shippingAddress: widget.shippingAddress,
                 createdAt: DateTime.now(),
               );
 
               final transactionId = await transactionProvider.createTransaction(transaction);
-              
+
               if (transactionId != null) {
                 // 清空购物车
                 await cart.clear();
-                
+
                 // 加载用户交易历史并打印
                 await transactionProvider.loadUserTransactions(_userID); // 使用已加载的用户ID
                 debugPrint('用户 ${_userID} 的所有交易:');

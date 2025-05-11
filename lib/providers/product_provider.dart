@@ -222,25 +222,29 @@ class ProductProvider with ChangeNotifier {
   Future<bool> updateProductQuantity(String productId, int quantityToReduce) async {
     _isLoading = true;
     notifyListeners();
-    
+    debugPrint("updateing product $quantityToReduce $productId");
+
     try {
       // 先获取当前产品
-      final product = await _productRepository.getProductById(productId);
+      final product = await _productRepository.getProductById2(productId);
       if (product == null) {
         return false;
       }
-      
+      debugPrint("updateing product $productId");
+
       // 计算新的库存数量
       final newQuantity = product.quantity - quantityToReduce;
       if (newQuantity < 0) {
         return false;
       }
-      
+
       // 创建更新后的产品对象
       final updatedProduct = product.copyWith(quantity: newQuantity);
-      
+
       // 更新产品
-      final success = await _productRepository.updateProduct(updatedProduct);
+      final success = await _productRepository.updateProduct2(updatedProduct);
+      debugPrint("updateing product sucess $success");
+
       if (success) {
         // 更新本地缓存
         final index = _products.indexWhere((p) => p.id == productId);

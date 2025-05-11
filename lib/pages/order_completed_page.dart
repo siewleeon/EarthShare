@@ -291,7 +291,7 @@ class OrderCompletedPage extends StatelessWidget {
   void _showPointRewardDialog(BuildContext context) async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) return;
-
+    debugPrint(">>>>>>>>>>>>>>>> point +++++++");
     final UID = currentUser.uid;
     final doc = await firestore.FirebaseFirestore.instance
         .collection('Users')
@@ -315,13 +315,19 @@ class OrderCompletedPage extends StatelessWidget {
     final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
     final transactions = transactionProvider.transactions;
     final pointsEarned = transactions.isNotEmpty ? (transactions.first.totalAmount * 10).round() : 0;
-    
+    debugPrint(">>>>>>>>>>>>>>>> point +++++++");
+
     // 更新产品库存
     if (transactions.isNotEmpty) {
+      debugPrint(">>>>>>>>>>>>>>>> point +++++++");
+
       final productProvider = Provider.of<ProductProvider>(context, listen: false);
       final items = transactions.first.items;
-      
+      debugPrint("this is items length"+items.length.toString());
+
       for (var item in items) {
+        debugPrint(">>>>>>>>>>>>>>>> point +++++++");
+
         await productProvider.updateProductQuantity(item.id, item.quantity);
       }
     }

@@ -6,7 +6,7 @@ import '../models/cart.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../pages/order_summary_page.dart';
-import '../pages/history_page.dart';  
+import '../pages/history_page.dart';
 
 class CartPage extends StatefulWidget  {
   const CartPage({super.key});
@@ -16,9 +16,6 @@ class CartPage extends StatefulWidget  {
 
 class _CartPageState extends State<CartPage> {
   String searchQuery = '';
-  String selectedCategory = '全部';
-
-  final List<String> categories = ['全部', '电器', '食品'];
 
   @override
   Widget build(BuildContext context) {
@@ -285,16 +282,14 @@ class _CartPageState extends State<CartPage> {
 
   Widget _buildCartItems(BuildContext context, CartProvider cart) {
     final allItems = cart.items.values.toList();
-
     final filteredItems = allItems.where((item) {
       final matchesSearch = item.product.name.toLowerCase().contains(searchQuery.toLowerCase());
-      final matchesCategory = selectedCategory == '全部' || item.product.productCategory == selectedCategory;
-      return matchesSearch && matchesCategory;
+      return matchesSearch;
     }).toList();
 
     return Column(
       children: [
-        _buildSearchAndFilterUI(),
+        _buildSearchUI(),
         if (filteredItems.isEmpty)
           Expanded(
             child: Center(
@@ -324,60 +319,25 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _buildSearchAndFilterUI() {
+  Widget _buildSearchUI() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        children: [
-          TextField(
-            decoration: InputDecoration(
-              hintText: '搜索商品名称',
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              fillColor: Colors.grey[100],
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide.none,
-              ),
-            ),
-            onChanged: (value) {
-              setState(() {
-                searchQuery = value;
-              });
-            },
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: '搜索商品名称',
+          prefixIcon: const Icon(Icons.search),
+          filled: true,
+          fillColor: Colors.grey[100],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide.none,
           ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 40,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                final category = categories[index];
-                final isSelected = selectedCategory == category;
-
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(category),
-                    selected: isSelected,
-                    onSelected: (_) {
-                      setState(() {
-                        selectedCategory = category;
-                      });
-                    },
-                    selectedColor: Colors.green,
-                    backgroundColor: Colors.grey[200],
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+        ),
+        onChanged: (value) {
+          setState(() {
+            searchQuery = value;
+          });
+        },
       ),
     );
   }
@@ -484,6 +444,15 @@ class _CartPageState extends State<CartPage> {
                               IconButton(
                                 icon: const Icon(Icons.add, size: 12),
                                 onPressed: () {
+                                  if (item.quantity >= item.product.quantity) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('已达到商品最大库存数量'),
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
+                                    return;
+                                  }
                                   cart.updateItemQuantity(item.product.id, item.quantity + 1);
                                 },
                                 color: Colors.grey[600],
