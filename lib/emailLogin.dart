@@ -33,9 +33,9 @@ class _LoginPageState extends State<EmailLoginPage> {
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Login failed: ${e.message} (code: ${e.code})')),
-
       );
-    } finally {
+    }
+    finally {
       setState(() {
         _isLoading = false;
       });
@@ -125,6 +125,17 @@ class _LoginPageState extends State<EmailLoginPage> {
                               color: Colors.blueAccent,
                               decoration: TextDecoration.underline,
                             ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        TextButton(onPressed: () {
+                          Navigator.pushNamed(context, '/adminLogin');
+                        },
+                          child: const Text("admin",style: TextStyle(color: Colors.blueAccent,
+                              decoration: TextDecoration.underline),
                           ),
                         ),
                       ],
