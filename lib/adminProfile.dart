@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'Manage/manageContactMessagesPage.dart';
+
+import 'Manage/manageContactMessagesPage.dart';
+
 class AdminProfile extends StatefulWidget {
   const AdminProfile({super.key});
 
@@ -24,7 +28,7 @@ class _ProfilePageState extends State<AdminProfile>
       case 1:
         {
           debugPrint("user");
-          // Change page to Manage User
+          Navigator.pushNamed(context, "/manageUserPage");
           break;
         }
       case 2:
@@ -51,6 +55,26 @@ class _ProfilePageState extends State<AdminProfile>
           debugPrint("logout");
           // Change page to Admin Login Page
           Navigator.pushNamedAndRemoveUntil(context, '/adminLogin', (Route<dynamic> route) => false);
+          break;
+        }
+      case 6:
+        {
+          debugPrint("contact messages");
+          // Change page to Admin Login Page
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ManageContactMessagesPage()),
+          );
+          break;
+        }
+      case 7:
+        {
+          debugPrint("feedback");
+          // Change page to Admin Login Page
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ManageContactMessagesPage()),
+          );
           break;
         }
       default:
@@ -99,6 +123,20 @@ class _ProfilePageState extends State<AdminProfile>
                 ElevatedButton(
                   onPressed: () {changePage(4);},
                   child: const Text('Sales Report'),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                // This button is Manage Products
+                ElevatedButton(
+                  onPressed: () {changePage(6);},
+                  child: const Text('Contact Messages'),
+                ),
+                // This button is Sales Report
+                ElevatedButton(
+                  onPressed: () {changePage(7);},
+                  child: const Text('Feedback'),
                 ),
               ],
             ),

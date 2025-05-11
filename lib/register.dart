@@ -313,7 +313,6 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-
   Widget _buildPasswordField(String label) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
