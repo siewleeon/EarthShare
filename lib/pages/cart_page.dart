@@ -346,24 +346,70 @@ class CartPage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-
                     Row(
                       children: [
-                        Text(
-                          'QTY:${item.quantity}',
-                          style: const TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.remove, size: 12),
+                                onPressed: () {
+                                  if (item.quantity > 1) {
+                                    cart.updateItemQuantity(item.product.id, item.quantity - 1);
+                                  } else {
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        title: const Text('confirm delete'),
+                                        content: const Text('do u sure u want to delete?'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(ctx),
+                                            child: const Text('cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              cart.removeItem(item.product.id);
+                                              Navigator.pop(ctx);
+                                            },
+                                            child: const Text('confirm'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                },
+                                color: Colors.grey[600],
+                              ),
+                              Text(
+                                '${item.quantity}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.add, size: 12),
+                                onPressed: () {
+                                  cart.updateItemQuantity(item.product.id, item.quantity + 1);
+                                },
+                                color: Colors.grey[600],
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'RM${(item.product.price * item.quantity).toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        // const SizedBox(width: 8),
+                        // Text(
+                        //   'RM${(item.product.price * item.quantity).toStringAsFixed(2)}',
+                        //   style: const TextStyle(
+                        //     color: Colors.green,
+                        //     fontWeight: FontWeight.bold,
+                        //   ),
+                        // ),
                       ],
                     ),
                   ],

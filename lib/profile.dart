@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:second_hand_shop/accountSetting.dart';
-import 'package:second_hand_shop/pages/Product/YourStoragePage.dart';
 import 'package:second_hand_shop/pages/contactUs_page.dart';
 import 'package:second_hand_shop/pages/points_page.dart';
 import './edit_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../pages/voucher_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -81,102 +81,78 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
+          // 背景图
           Positioned.fill(
             child: Image.asset(
               'assets/images/profile_background.png',
               fit: BoxFit.cover,
             ),
           ),
-          // 内容区
-          SafeArea(
-            child: SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: screenHeight),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    buildTopSection(),
+          // 前景内容
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                buildTopSection(),
 
-                    // Points section
-                    buildCardSection("My Points", [
-                      buildFeatureButton(
-                        label: "Voucher",
-                        icon: Icons.confirmation_number,
-                      ),
-                      buildFeatureButton(
-                        label: "Earning Points",
-                        icon: Icons.monetization_on,
-                        iconBgColor: Colors.purple.shade50,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PointsPage(userId: userId),
-                            ),
-                          );
-                        },
-                      ),
-                    ]),
-
-                    // Store section
-                    buildCardSection("My Store", [
-                      buildFeatureButton(
-                        label: "My Post",
-                        icon: Icons.post_add,
-                      ),
-                      buildFeatureButton(
-                        label: "History",
-                        icon: Icons.lock_clock,
-                        iconBgColor: Colors.grey,
-                      ),
-                    ]),
-                buildCardSection("My Store", [
+                buildCardSection("My Points", [
                   buildFeatureButton(
-                    label: "My Post",
-                    icon: Icons.post_add,
+                    label: "Voucher",
+                    icon: Icons.confirmation_number,
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => YourStorePage(currentUserId : userId),
+                          builder: (context) => const VoucherPage(),
                         ),
                       );
                     },
                   ),
                   buildFeatureButton(
-                    label: "History",
-                    icon: Icons.lock_clock,
-                    iconBgColor: Colors.grey,
-                    // 可以加跳转逻辑
+                    label: "Earning Points",
+                    icon: Icons.monetization_on,
+                    iconBgColor: Colors.purple.shade50,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PointsPage(userId: userId),
+                        ),
+                      );
+                    },
                   ),
                 ]),
 
-                    // Support section
-                    buildCardSection("Support", [
-                      buildFeatureButton(
-                        label: "Contact Us",
-                        icon: Icons.support_agent,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const ContactUsPage(),
-                            ),
-                          );
-                        },
-                      ),
-                    ]),
+                buildCardSection("My Store", [
+                  buildFeatureButton(
+                    label: "My Post",
+                    icon: Icons.post_add,
+                  ),
+                  buildFeatureButton(
+                    label: "History",
+                    icon: Icons.lock_clock,
+                    iconBgColor: Colors.grey,
+                  ),
+                ]),
 
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
+                buildCardSection("Support", [
+                  buildFeatureButton(
+                    label: "Contact Us",
+                    icon: Icons.support_agent,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ContactUsPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ]),
+              ],
             ),
           ),
         ],
@@ -184,6 +160,7 @@ class _ProfilePageState extends State<ProfilePage> {
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
+
 
   Widget buildTopSection() {
     return Padding(
@@ -231,10 +208,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         ],
                       ),
                       const SizedBox(height: 4),
+
                       Text(
                         userId,
                         style: const TextStyle(fontSize: 15, color: Colors.grey),
                       ),
+
+
+
                     ],
                   ),
                 ),
@@ -285,10 +266,10 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: const EdgeInsets.all(16),
             child: GridView.count(
               shrinkWrap: true,
-              crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 3,
+              crossAxisCount: 2,
               mainAxisSpacing: 16,
               crossAxisSpacing: 16,
-              childAspectRatio: MediaQuery.of(context).size.width < 600 ? 1.2 : 1.5, // 适配屏幕尺寸
+              childAspectRatio: 1.6,
               physics: NeverScrollableScrollPhysics(),
               children: children,
             ),
@@ -308,26 +289,29 @@ class _ProfilePageState extends State<ProfilePage> {
       onTap: onTap,
       child: SizedBox(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,  // 居中对齐
           children: [
             Container(
-              padding: EdgeInsets.all(20),
+              padding: EdgeInsets.all(12),  // 减小内边距
               decoration: BoxDecoration(
                 color: iconBgColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: Colors.black),
+              child: Icon(icon, color: Colors.black, size: 20),  // 减小图标大小
             ),
-            SizedBox(height: 8),
+            SizedBox(height: 4),  // 减小间距
             Text(
               label,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),  // 减小文字大小
+              textAlign: TextAlign.center,  // 文字居中
+              maxLines: 1,  // 限制一行
+              overflow: TextOverflow.ellipsis,  // 文字溢出时显示省略号
             ),
           ],
         ),
       ),
     );
   }
-
 
   Widget _buildBottomNavigationBar() {
     return Container(
