@@ -310,7 +310,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildProductGrid() {
     return Consumer<ProductProvider>(
       builder: (context, productProvider, child) {
-        if (productProvider.isLoading) {
+        if (productProvider.isLoading && productProvider.products.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -323,15 +323,14 @@ class _HomePageState extends State<HomePage> {
           );
         }
 
-
         final products = productProvider.products.where((product) {
           final nameMatch = product.name.toLowerCase().contains(_searchQuery);
-          final categoryMatch = _selectedCategory == 'All' || product.productCategory == _selectedCategory;
+          final categoryMatch =
+              _selectedCategory == 'All' || product.productCategory == _selectedCategory;
           final notOwnedByUser = product.sellerId != userId;
           final noEmpty = product.quantity != 0;
           return nameMatch && categoryMatch && notOwnedByUser && noEmpty;
         }).toList();
-
 
         if (products.isEmpty) {
           return const Center(
@@ -342,130 +341,138 @@ class _HomePageState extends State<HomePage> {
           );
         }
 
-        return GridView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 0.75,
-          ),
-          itemCount: products.length,
-          itemBuilder: (context, index) {
-            final product = products[index];
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        ProductDetailPage(productId: product.id),
-                  ),
-                );
-              },
-              child: Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                clipBehavior: Clip.antiAlias,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Builder(
-                        builder: (context) {
-                          final currentImageIndex = ValueNotifier<int>(0);
+        return RefreshIndicator(
+          onRefresh: () async {
+            // 重新获取产品数据
+            await Provider.of<ProductProvider>(context, listen: false).fetchProducts();
+          },
+          child: GridView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: 0.75,
+            ),
+            itemCount: products.length,
+            itemBuilder: (context, index) {
+              final product = products[index];
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ProductDetailPage(productId: product.id),
+                    ),
+                  );
+                },
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Builder(
+                          builder: (context) {
+                            final currentImageIndex = ValueNotifier<int>(0);
 
-                          return Stack(
-                            children: [
-                              ValueListenableBuilder<int>(
-                                valueListenable: currentImageIndex,
-                                builder: (context, index, _) {
-                                  return PageView.builder(
-                                    itemCount: product.imageId.length,
-                                    onPageChanged: (i) => currentImageIndex.value = i,
-                                    itemBuilder: (context, i) {
-                                      return Image.network(
-                                        product.imageId[i],
-                                        fit: BoxFit.cover,
-                                        width: double.infinity,
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                              Positioned(
-                                top: 8,
-                                left: 8,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black54,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    product.conditionLabel,
-                                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 8,
-                                right: 8,
-                                child: ValueListenableBuilder<int>(
+                            return Stack(
+                              children: [
+                                ValueListenableBuilder<int>(
                                   valueListenable: currentImageIndex,
                                   builder: (context, index, _) {
-                                    return Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black54,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        '${index + 1}/${product.imageId.length}',
-                                        style: const TextStyle(color: Colors.white, fontSize: 10),
-                                      ),
+                                    return PageView.builder(
+                                      itemCount: product.imageId.length,
+                                      onPageChanged: (i) => currentImageIndex.value = i,
+                                      itemBuilder: (context, i) {
+                                        return Image.network(
+                                          product.imageId[i],
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                        );
+                                      },
                                     );
                                   },
                                 ),
-                              ),
-                            ],
-                          );
-                        },
+                                Positioned(
+                                  top: 8,
+                                  left: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black54,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      product.conditionLabel,
+                                      style: const TextStyle(
+                                          color: Colors.white, fontSize: 12),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  bottom: 8,
+                                  right: 8,
+                                  child: ValueListenableBuilder<int>(
+                                    valueListenable: currentImageIndex,
+                                    builder: (context, index, _) {
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black54,
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Text(
+                                          '${index + 1}/${product.imageId.length}',
+                                          style: const TextStyle(
+                                              color: Colors.white, fontSize: 10),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                       ),
-                    ),
-
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            product.name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style:
-                            const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'RM ${product.price.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            product.productCategory,
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.grey),
-                          ),
-                        ],
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              product.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'RM ${product.price.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              product.productCategory,
+                              style: const TextStyle(
+                                  fontSize: 12, color: Colors.grey),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );
