@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../providers/cart_provider.dart';
+import '../localStorage/UserDataDatabaseHelper.dart';
 import 'order_completed_page.dart';
-import '../models/transaction.dart';
+import '../models/transaction.dart' as trans_model;
 import '../providers/transaction_provider.dart';
 
 class PaymentPage extends StatefulWidget {
   final String shippingAddress;
-  
+  final double finalAmount;
   const PaymentPage({
     super.key,
     required this.shippingAddress,
+    required this.finalAmount
   });
 
   @override
@@ -26,6 +30,50 @@ class _PaymentPageState extends State<PaymentPage> {
   final _cardMonthController = TextEditingController();
   final _cardYearController = TextEditingController();
   final _cvvController = TextEditingController();
+  final _dbHelper = UserDataDatabaseHelper();
+  String _userID = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserID();
+  }
+
+  Future<void> _loadUserID() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    final UID = currentUser.uid;
+    final doc = await FirebaseFirestore.instance.collection('Users').doc(UID).get();
+    
+    if (doc.exists) {
+      final data = doc.data() as Map<String, dynamic>;
+      _userID = data['userId'] ?? '';
+      _loadBankDetails();
+    }
+  }
+
+  Future<void> _loadBankDetails() async {
+    if (_userID.isEmpty) return;
+    
+    final accounts = await _dbHelper.getBankAccountsByUserID(_userID);
+    if (accounts.isNotEmpty) {
+      final account = accounts.first;
+      setState(() {
+        _cardNameController.text = account['cardHolder'] ?? '';
+        _cardNumberController.text = account['cardNumber'] ?? '';
+        
+        // 处理过期日期
+        final expiryDate = account['expiryDate'] ?? '';
+        if (expiryDate.length >= 4) {
+          _cardMonthController.text = expiryDate.substring(0, 2);
+          _cardYearController.text = expiryDate.substring(3, 5);
+        }
+        
+        _cvvController.text = account['cvv'] ?? '';
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -203,7 +251,7 @@ class _PaymentPageState extends State<PaymentPage> {
           Consumer<CartProvider>(
             builder: (context, cart, child) {
               return Text(
-                'RM${cart.totalAmount.toStringAsFixed(2)}',
+                'RM${widget.finalAmount.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -472,16 +520,16 @@ class _PaymentPageState extends State<PaymentPage> {
               // 创建交易记录
               final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
               final timestamp = DateTime.now();
-              final transaction = Transaction(
-                id: 'T${timestamp.millisecondsSinceEpoch}', // 使用时间戳创建唯一ID
-                userId: 'user1', // 使用默认用户
+              final transaction = trans_model.Transaction(
+                id: 'T${timestamp.millisecondsSinceEpoch}',
+                userId: _userID, // 使用已加载的用户ID
                 items: cart.items.values.toList(),
-                totalAmount: cart.totalAmount,
-                status: TransactionStatus.shipped,
+                totalAmount: widget.finalAmount,
+                status: trans_model.TransactionStatus.shipped,
                 paymentMethod: _selectedPaymentMethod == 'CARD' 
-                    ? PaymentMethod.creditCard 
-                    : PaymentMethod.cashOnDelivery,
-                shippingAddress: widget.shippingAddress, // 这里可以从之前页面传入
+                    ? trans_model.PaymentMethod.creditCard 
+                    : trans_model.PaymentMethod.cashOnDelivery,
+                shippingAddress: widget.shippingAddress,
                 createdAt: DateTime.now(),
               );
 
@@ -492,8 +540,8 @@ class _PaymentPageState extends State<PaymentPage> {
                 await cart.clear();
                 
                 // 加载用户交易历史并打印
-                await transactionProvider.loadUserTransactions('user1');
-                debugPrint('User1 的所有交易:');
+                await transactionProvider.loadUserTransactions(_userID); // 使用已加载的用户ID
+                debugPrint('用户 ${_userID} 的所有交易:');
                 for (var t in transactionProvider.transactions) {
                   debugPrint('交易ID: ${t.id}');
                   debugPrint('总金额: ${t.totalAmount}');

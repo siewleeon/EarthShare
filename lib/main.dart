@@ -68,6 +68,8 @@ class MainApp extends StatelessWidget {
           '/adminLogin': (context) => const AdminLoginPage(),
           '/adminPage': (context) => const AdminProfile(),
           '/manageVoucherPage': (context) => const ManageVoucherList(),
+          '/manageUserPage': (context) => const ManageUserPage(),
+
           '/salesReportPage': (context) => const SalesReport(),
         },
         theme: ThemeData(

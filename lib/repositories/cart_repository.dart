@@ -3,11 +3,28 @@ import 'package:flutter/foundation.dart';
 import '../models/cart.dart';
 import '../models/product.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CartRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  // 添加默认用户ID常量
-  static const String defaultUserId = 'user1';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // 获取当前用户ID
+  Future<String?> getCurrentUserId() async {
+    final currentUser = _auth.currentUser;
+    if (currentUser == null) return null;
+    
+    final doc = await _firestore
+        .collection('Users')
+        .doc(currentUser.uid)
+        .get();
+    
+    if (doc.exists) {
+      final data = doc.data() as Map<String, dynamic>;
+      return data['userId'];
+    }
+    return null;
+  }
 
   // 获取用户购物车
   Future<Map<String, CartItem>> getUserCart(String userId) async {
@@ -179,28 +196,38 @@ class CartRepository {
     }
   }
 
-  // 获取默认用户的购物车
+  // 获取当前用户的购物车
   Future<Map<String, CartItem>> getDefaultUserCart() async {
-    return getUserCart(defaultUserId);
+    final userId = await getCurrentUserId();
+    if (userId == null) return {};
+    return getUserCart(userId);
   }
 
-  // 更新默认用户的购物车
+  // 更新当前用户的购物车
   Future<bool> updateDefaultUserCart(Map<String, CartItem> items) async {
-    return updateUserCart(defaultUserId, items);
+    final userId = await getCurrentUserId();
+    if (userId == null) return false;
+    return updateUserCart(userId, items);
   }
 
-  // 添加商品到默认用户的购物车
+  // 添加商品到当前用户的购物车
   Future<bool> addItemToDefaultCart(Product product, int quantity) async {
-    return addItemToCart(defaultUserId, product, quantity);
+    final userId = await getCurrentUserId();
+    if (userId == null) return false;
+    return addItemToCart(userId, product, quantity);
   }
 
-  // 从默认用户的购物车移除商品
+  // 从当前用户的购物车移除商品
   Future<bool> removeItemFromDefaultCart(String productId) async {
-    return removeItemFromCart(defaultUserId, productId);
+    final userId = await getCurrentUserId();
+    if (userId == null) return false;
+    return removeItemFromCart(userId, productId);
   }
 
-  // 清空默认用户的购物车
+  // 清空当前用户的购物车
   Future<bool> clearDefaultCart() async {
-    return clearCart(defaultUserId);
+    final userId = await getCurrentUserId();
+    if (userId == null) return false;
+    return clearCart(userId);
   }
 }
