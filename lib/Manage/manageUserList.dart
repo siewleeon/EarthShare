@@ -21,6 +21,37 @@ class _ManageUserPageState extends State<ManageUserPage> {
   final List<String> _sortOptions = ['name', 'userId', 'email'];
   final List<String> _searchOptions = ['name', 'email'];
 
+  void changePage(int page) {
+    switch (page) {
+      case 0:
+        debugPrint("home");
+        Navigator.pushReplacementNamed(context, "/adminPage");
+        break;
+      case 1:
+        debugPrint("user");
+        Navigator.pushReplacementNamed(context, "/manageUserPage");
+        break;
+      case 2:
+        debugPrint("voucher");
+        Navigator.pushReplacementNamed(context, "/manageVoucherPage");
+        break;
+      case 3:
+        debugPrint("product");
+        Navigator.pushReplacementNamed(context, "/manageProductPage");
+        break;
+      case 4:
+        debugPrint("report");
+        Navigator.pushReplacementNamed(context, "/salesReportPage");
+        break;
+      case 5:
+        debugPrint("logout");
+        Navigator.pushNamedAndRemoveUntil(context, '/adminLogin', (Route<dynamic> route) => false);
+        break;
+      default:
+        break;
+    }
+  }
+
   // 获取所有用户
   Future<List<Map<String, dynamic>>> _fetchUsers() async {
     try {
@@ -231,6 +262,86 @@ class _ManageUserPageState extends State<ManageUserPage> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.5),
+            spreadRadius: 1,
+            blurRadius: 5,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavItem(Icons.person_outline, "User", true),
+            _buildNavItem(Icons.local_offer, "Voucher", false),
+            _buildNavItem(Icons.home, "Home", false),
+            _buildNavItem(Icons.store, "Products", false),
+            _buildNavItem(Icons.insert_chart, "Report", false),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
+    return Builder(
+      builder: (context) => GestureDetector(
+        onTap: () {
+          switch (label) {
+            case 'Home':
+              changePage(0);
+              break;
+            case 'User':
+              changePage(1);
+              break;
+            case 'Voucher':
+              changePage(2);
+              break;
+            case 'Products':
+              changePage(3);
+              break;
+            case 'Report':
+              changePage(4);
+              break;
+          }
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: isSelected ? const EdgeInsets.all(8) : EdgeInsets.zero,
+              decoration: isSelected
+                  ? BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.blue[100],
+              )
+                  : null,
+              child: Icon(
+                icon,
+                color: isSelected ? Colors.blue : Colors.grey,
+              ),
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.blue : Colors.grey,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
