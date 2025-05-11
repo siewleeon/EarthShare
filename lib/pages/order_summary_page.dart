@@ -323,7 +323,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Image.network(
-              item.product.imageId.first,
+              item.product.imageUrl,
               width: 60,
               height: 60,
               fit: BoxFit.cover,
@@ -484,6 +484,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
     }
 
     try {
+      // 获取用户ID
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -492,90 +493,72 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
         return;
       }
 
-      final UID = currentUser.uid;
-      final userDoc = await firestore.FirebaseFirestore.instance
-          .collection('Users')
-          .doc(UID)
+      // 查询优惠券信息
+      final voucherQuery = await firestore.FirebaseFirestore.instance
+          .collection('Voucher')
+          .where('voucher_ID', isEqualTo: code)
           .get();
-      
-      if (!userDoc.exists) {
+
+      if (voucherQuery.docs.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('用户信息不存在')),
+          const SnackBar(content: Text('invalid voucher')),
         );
         return;
       }
+
+      final voucherDoc = voucherQuery.docs.first;
+      final voucherData = voucherDoc.data();
       
-      final userId = userDoc.data()?['userId'];
-      if (userId == null) return;
+      // 检查优惠券是否还有剩余数量
+      final total = voucherData['total'] ?? 0;
+      if (total <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('no more voucher')),
+        );
+        return;
+      }
 
-      // 获取最新的积分记录
-      final pointsQuery = await firestore.FirebaseFirestore.instance
-          .collection('points')
-          .where('user_ID', isEqualTo: userId)
-          .orderBy('created_at', descending: true)
-          .limit(1)
-          .get();
+      // 检查优惠券是否过期
+      final expiredDate = (voucherData['expired_date'] as firestore.Timestamp).toDate();
+      if (expiredDate.isBefore(DateTime.now())) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('voucher expired')),
+        );
+        return;
+      }
 
-      final currentPoints = pointsQuery.docs.isEmpty ? 0 : pointsQuery.docs.first.data()['points'] ?? 0;
+      // 检查用户积分是否足够
+      final requiredPoints = voucherData['point'] ?? 0;
+      final userPoints = await _getUserPoints();
+      if (userPoints < requiredPoints) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('points not enough, need $requiredPoints point')),
+        );
+        return;
+      }
 
+      // 更新状态
       setState(() {
-        switch (code.toUpperCase()) {
-          case 'SAVE5':
-            if (currentPoints >= 100) {
-              _discountPercentage = 0.05;
-              _requiredPoints = 100;
-              _isVoucherApplied = true;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('5% 折扣已应用')),
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('需要100积分来使用此优惠码')),
-              );
-            }
-            break;
-          case 'SAVE10':
-            if (currentPoints >= 200) {
-              setState(() {
-                _discountPercentage = 0.10;
-                _requiredPoints = 200;
-                _isVoucherApplied = true;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('10% 折扣已应用')),
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('需要200积分来使用此优惠码')),
-              );
-            }
-            break;
-          case 'SAVE15':
-            if (currentPoints >= 300) {
-              setState(() {
-                _discountPercentage = 0.15;
-                _requiredPoints = 300;
-                _isVoucherApplied = true;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('15% 折扣已应用')),
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('需要300积分来使用此优惠码')),
-              );
-            }
-            break;
-          default:
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('无效的优惠码')),
-            );
-        }
+        _discountPercentage = (voucherData['discount'] ?? 0.0).toDouble();
+        _requiredPoints = requiredPoints;
+        _isVoucherApplied = true;
       });
-    } catch (e) {
-      debugPrint('验证优惠券时出错: $e');
+
+      // 更新优惠券数量
+      await firestore.FirebaseFirestore.instance
+          .collection('Voucher')
+          .doc(voucherDoc.id)
+          .update({
+        'total': total - 1
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('验证优惠券时出错，请稍后重试')),
+        const SnackBar(content: Text('voucher applied')),
+      );
+
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('voucher ERROR: $e')),
       );
     }
   }
