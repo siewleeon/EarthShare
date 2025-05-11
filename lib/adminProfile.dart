@@ -35,15 +35,13 @@ class _ProfilePageState extends State<AdminProfile> {
         break;
       case 5:
         debugPrint("logout");
-        Navigator.pushNamedAndRemoveUntil(
-            context, '/adminLogin', (Route<dynamic> route) => false);
+        Navigator.pushNamedAndRemoveUntil(context, '/adminLogin', (Route<dynamic> route) => false);
         break;
       case 6:
         debugPrint("contact messages");
         Navigator.push(
           context,
-          MaterialPageRoute(
-              builder: (context) => const ManageContactMessagesPage()),
+          MaterialPageRoute(builder: (context) => const ManageContactMessagesPage()),
         );
         break;
       case 7:
@@ -171,13 +169,11 @@ class _ProfilePageState extends State<AdminProfile> {
                 final totalSalesCompleted = transactionDocs.length;
                 final totalProfitEarned = transactionDocs.fold(
                   0.0,
-                      (sum, doc) =>
-                  sum + ((doc.get('totalAmount') as num?)?.toDouble() ?? 0.0),
+                      (sum, doc) => sum + ((doc.get('totalAmount') as num?)?.toDouble() ?? 0.0),
                 );
                 final totalProductsInStock = productDocs.fold(
                   0,
-                      (sum, doc) =>
-                  sum + ((doc.get('product_Quantity') as num?)?.toInt() ?? 0),
+                      (sum, doc) => sum + ((doc.get('product_Quantity') as num?)?.toInt() ?? 0),
                 );
 
                 return Container(
@@ -198,36 +194,30 @@ class _ProfilePageState extends State<AdminProfile> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Total Sales Completed',
-                              style: TextStyle(color: Colors.white)),
+                          const Text('Total Sales Completed', style: TextStyle(color: Colors.white)),
                           Text(
                             totalSalesCompleted.toString(),
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 20),
+                            style: const TextStyle(color: Colors.white, fontSize: 20),
                           ),
                         ],
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Total Profit Earned',
-                              style: TextStyle(color: Colors.white)),
+                          const Text('Total Profit Earned', style: TextStyle(color: Colors.white)),
                           Text(
                             '\$${totalProfitEarned.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 20),
+                            style: const TextStyle(color: Colors.white, fontSize: 20),
                           ),
                         ],
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Product In Stock',
-                              style: TextStyle(color: Colors.white)),
+                          const Text('Product In Stock', style: TextStyle(color: Colors.white)),
                           Text(
                             totalProductsInStock.toString(),
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 20),
+                            style: const TextStyle(color: Colors.white, fontSize: 20),
                           ),
                         ],
                       ),
@@ -238,8 +228,7 @@ class _ProfilePageState extends State<AdminProfile> {
             ),
             // Total User
             FutureBuilder<QuerySnapshot>(
-              future: FirebaseFirestore.instance.collection('transactions')
-                  .get(),
+              future: FirebaseFirestore.instance.collection('transactions').get(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Padding(
@@ -262,11 +251,8 @@ class _ProfilePageState extends State<AdminProfile> {
                   final data = doc.data() as Map<String, dynamic>;
                   final userId = data['userId'] as String;
                   final items =
-                      (data['items'] as List<dynamic>?)?.cast<Map<
-                          String,
-                          dynamic>>() ?? [];
-                  final totalAmount = (data['totalAmount'] as num?)
-                      ?.toDouble() ?? 0.0;
+                      (data['items'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
+                  final totalAmount = (data['totalAmount'] as num?)?.toDouble() ?? 0.0;
 
                   if (!userSales.containsKey(userId)) {
                     userSales[userId] = {'quantity': 0, 'totalProfit': 0.0};
@@ -276,8 +262,7 @@ class _ProfilePageState extends State<AdminProfile> {
                 }
                 final totalUsers = userSales.length;
                 final totalPurchases =
-                userSales.values.fold(
-                    0, (sum, e) => sum + e['quantity'] as int);
+                userSales.values.fold(0, (sum, e) => sum + e['quantity'] as int);
                 final totalProfit =
                 userSales.values.fold(0.0, (sum, e) => sum + e['totalProfit']);
                 final averagePurchasePerUser =
@@ -359,7 +344,7 @@ class _ProfilePageState extends State<AdminProfile> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.3),
+              color: Colors.grey.withValues(alpha:0.3),
               spreadRadius: 2,
               blurRadius: 5,
               offset: const Offset(0, 3),
@@ -409,7 +394,7 @@ class _ProfilePageState extends State<AdminProfile> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.5),
+            color: Colors.grey.withValues(alpha:0.5),
             spreadRadius: 1,
             blurRadius: 5,
           ),
@@ -433,54 +418,52 @@ class _ProfilePageState extends State<AdminProfile> {
 
   Widget _buildNavItem(IconData icon, String label, bool isSelected) {
     return Builder(
-      builder: (context) =>
-          GestureDetector(
-            onTap: () {
-              switch (label) {
-                case 'Home':
-                  changePage(0);
-                  break;
-                case 'User':
-                  changePage(1);
-                  break;
-                case 'Voucher':
-                  changePage(2);
-                  break;
-                case 'Products':
-                  changePage(3);
-                  break;
-                case 'Report':
-                  changePage(4);
-                  break;
-              }
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: isSelected ? const EdgeInsets.all(8) : EdgeInsets
-                      .zero,
-                  decoration: isSelected
-                      ? BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.blue[100],
-                  )
-                      : null,
-                  child: Icon(
-                    icon,
-                    color: isSelected ? Colors.blue : Colors.grey,
-                  ),
-                ),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: isSelected ? Colors.blue : Colors.grey,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+      builder: (context) => GestureDetector(
+        onTap: () {
+          switch (label) {
+            case 'Home':
+              changePage(0);
+              break;
+            case 'User':
+              changePage(1);
+              break;
+            case 'Voucher':
+              changePage(2);
+              break;
+            case 'Products':
+              changePage(3);
+              break;
+            case 'Report':
+              changePage(4);
+              break;
+          }
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: isSelected ? const EdgeInsets.all(8) : EdgeInsets.zero,
+              decoration: isSelected
+                  ? BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.blue[100],
+              )
+                  : null,
+              child: Icon(
+                icon,
+                color: isSelected ? Colors.blue : Colors.grey,
+              ),
             ),
-          ),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.blue : Colors.grey,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
