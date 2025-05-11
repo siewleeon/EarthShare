@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:second_hand_shop/providers/transaction_provider.dart';
 import 'Manage/manageContactMessagesPage.dart';
 import 'Manage/manageFeedback_page.dart';
 
@@ -9,13 +12,9 @@ class AdminProfile extends StatefulWidget {
   State<AdminProfile> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<AdminProfile>
-{
-  // For ease of manage, page 0 is Home page, then is Manage User, Voucher, Products, Sales Report and last will be log out page
-  void changePage(int page)
-  {
-    switch(page)
-        {
+class _ProfilePageState extends State<AdminProfile> {
+  void changePage(int page) {
+    switch (page) {
       case 0:
         {
           debugPrint("home");
@@ -32,26 +31,23 @@ class _ProfilePageState extends State<AdminProfile>
       case 2:
         {
           debugPrint("voucher");
-          // Change page to Manage Voucher
           Navigator.pushNamed(context, "/manageVoucherPage");
           break;
         }
       case 3:
         {
           debugPrint("product");
-          // Change page to Manage Products
           break;
         }
       case 4:
         {
           debugPrint("report");
-          // Change page to Sales Report
+          Navigator.pushNamed(context, "/salesReportPage");
           break;
         }
       case 5:
         {
           debugPrint("logout");
-          // Change page to Admin Login Page
           Navigator.pushNamedAndRemoveUntil(context, '/adminLogin', (Route<dynamic> route) => false);
           break;
         }
@@ -81,73 +77,273 @@ class _ProfilePageState extends State<AdminProfile>
   }
 
   @override
-  Widget build(BuildContext context)
-  {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          children: [
-            Row(
-              children: [
-                // This button is log out
-                ElevatedButton(
-                  onPressed: () {changePage(5);},
-                  child: const Text('Log Out'),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                // This button is Manage User
-                ElevatedButton(
-                  onPressed: () {changePage(1);},
-                  child: const Text('Manage User'),
-                ),
-                // This button is Manage Voucher
-                ElevatedButton(
-                  onPressed: () {changePage(2);},
-                  child: const Text('Manage Voucher'),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                // This button is Manage Products
-                ElevatedButton(
-                  onPressed: () {changePage(3);},
-                  child: const Text('Manage Products'),
-                ),
-                // This button is Sales Report
-                ElevatedButton(
-                  onPressed: () {changePage(4);},
-                  child: const Text('Sales Report'),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                // This button is Manage Products
-                ElevatedButton(
-                  onPressed: () {changePage(6);},
-                  child: const Text('Contact Messages'),
-                ),
-                // This button is Sales Report
-                ElevatedButton(
-                  onPressed: () {changePage(7);},
-                  child: const Text('Feedback'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => TransactionProvider(),
+      child: Consumer<TransactionProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoading) {
+            return const Scaffold(
+                body: Center(child: CircularProgressIndicator()));
+          }
 
-      bottomNavigationBar: _buildBottomNavigationBar(),
+          return Scaffold(
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Header (unchanged)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    color: Colors.blue,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('EarthManage', style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold)),
+                        IconButton(icon: const Icon(
+                            Icons.logout, color: Colors.white), onPressed: () =>
+                            changePage(5)),
+                      ],
+                    ),
+                  ),
+                  // Menu Buttons (unchanged)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: GridView.count(
+                      crossAxisCount: 2,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 2.5,
+                      children: [
+                        _buildMenuButton(icon: Icons.people,
+                            label: 'Manage Users',
+                            color: Colors.yellow[100]!,
+                            onTap: () => changePage(1)),
+                        _buildMenuButton(icon: Icons.store,
+                            label: 'Manage Products',
+                            color: Colors.blue[100]!,
+                            onTap: () => changePage(3)),
+                        _buildMenuButton(icon: Icons.local_offer,
+                            label: 'Manage Voucher',
+                            color: Colors.pink[100]!,
+                            onTap: () => changePage(2)),
+                        _buildMenuButton(icon: Icons.bar_chart,
+                            label: 'Sales Report',
+                            color: Colors.blue[100]!,
+                            onTap: () => changePage(4)),
+                      ],
+                    ),
+                  ),
+                  // Weekly Summary (unchanged for now)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    color: Colors.blue,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Weekly Summary', style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 10),
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [const Text('Total Sales Completed',
+                                style: TextStyle(color: Colors.white)), Text(
+                                '23', style: TextStyle(
+                                color: Colors.white, fontSize: 20))
+                            ]),
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [const Text('Total Profit Earned',
+                                style: TextStyle(color: Colors.white)), Text(
+                                '21', style: TextStyle(
+                                color: Colors.white, fontSize: 20))
+                            ]),
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [const Text('Product In Stock',
+                                style: TextStyle(color: Colors.white)), Text(
+                                '02', style: TextStyle(
+                                color: Colors.white, fontSize: 20))
+                            ]),
+                      ],
+                    ),
+                  ),
+                  // Total User with FutureBuilder
+                  FutureBuilder<QuerySnapshot>(
+                    future: FirebaseFirestore.instance.collection(
+                        'transactions').get(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      if (snapshot.hasError) {
+                        return Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Text('Error: ${snapshot.error}',
+                              style: const TextStyle(color: Colors.red)),
+                        );
+                      }
+                      final transactions = snapshot.data?.docs ?? [];
+                      Map<String, Map<String, dynamic>> userSales = {};
+                      for (var doc in transactions) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        final userId = data['userId'] as String;
+                        final items = (data['items'] as List<dynamic>?)?.cast<
+                            Map<String, dynamic>>() ?? [];
+                        final totalAmount = (data['totalAmount'] as num?)
+                            ?.toDouble() ?? 0.0;
+
+                        if (!userSales.containsKey(userId)) {
+                          userSales[userId] = {
+                            'quantity': 0,
+                            'totalProfit': 0.0
+                          };
+                        }
+                        userSales[userId]!['quantity'] += items.length;
+                        userSales[userId]!['totalProfit'] += totalAmount;
+                      }
+                      final totalUsers = userSales.length;
+                      final totalPurchases = userSales.values.fold(
+                          0, (sum, e) => sum + e['quantity'] as int);
+                      final totalProfit = userSales.values.fold(
+                          0.0, (sum, e) => sum + e['totalProfit']);
+                      final averagePurchasePerUser = totalUsers > 0
+                          ? (totalPurchases / totalUsers).round()
+                          : 0;
+                      final averageProfitPerUser = totalUsers > 0
+                          ? (totalProfit / totalUsers).toStringAsFixed(2)
+                          : '0.00';
+
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        color: Colors.green,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Total User', style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('Average Purchase Per User',
+                                    style: TextStyle(color: Colors.white)),
+                                Text(averagePurchasePerUser.toString(),
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 20)),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('Average Profit Per User',
+                                    style: TextStyle(color: Colors.white)),
+                                Text('\$$averageProfitPerUser',
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 20)),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                // This button is Manage Products
+                                ElevatedButton(
+                                  onPressed: () {
+                                    changePage(6);
+                                  },
+                                  child: const Text('Contact Messages'),
+                                ),
+                                // This button is Sales Report
+                                ElevatedButton(
+                                  onPressed: () {
+                                    changePage(7);
+                                  },
+                                  child: const Text('Feedback'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            bottomNavigationBar: _buildBottomNavigationBar(),
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildBottomNavigationBar()
-  {
+
+  Widget _buildMenuButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.3),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: color,
+                ),
+                child: Icon(
+                  icon,
+                  size: 28,
+                  color: Colors.black54,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.blueGrey,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.left,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 12),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,

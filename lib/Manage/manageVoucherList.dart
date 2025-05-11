@@ -50,6 +50,7 @@ class _ListPageState extends State<ManageVoucherList> {
         break;
       case 4:
         debugPrint("report");
+        Navigator.pushReplacementNamed(context, "/salesReportPage");
         break;
       case 5:
         debugPrint("logout");

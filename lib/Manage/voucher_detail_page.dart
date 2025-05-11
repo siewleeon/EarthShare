@@ -20,6 +20,7 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
   late TextEditingController _expiredDateController;
 
   bool _isEditing = false;
+  bool _isLoading = false; // Add loading state
 
   @override
   void initState() {
@@ -48,6 +49,10 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
   }
 
   void _saveChanges() async {
+    setState(() {
+      _isLoading = true; // Show loading indicator
+    });
+
     final voucherProvider = Provider.of<VoucherProvider>(context, listen: false);
     final updatedVoucher = widget.voucher.copyWith(
       description: _descriptionController.text,
@@ -57,15 +62,59 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
       expired_date: DateTime.tryParse(_expiredDateController.text) ?? widget.voucher.expired_date,
     );
 
-    await voucherProvider.updateVoucher(updatedVoucher);
+    try {
+      final success = await voucherProvider.updateVoucher(updatedVoucher);
+      if (success) {
+        setState(() {
+          _isEditing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Voucher updated')),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update voucher')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false; // Hide loading indicator
+      });
+    }
+  }
+
+  void _deleteVoucher() async {
     setState(() {
-      _isEditing = false;
+      _isLoading = true; // Show loading indicator
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Voucher updated')),
-    );
-    Navigator.pop(context);
-    voucherProvider.fetchVoucher();
+
+    try {
+      final voucherProvider = Provider.of<VoucherProvider>(context, listen: false);
+      final success = await voucherProvider.deleteVoucher(widget.voucher.id);
+      if (success) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Voucher deleted')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete voucher')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false; // Hide loading indicator
+      });
+    }
   }
 
   void _cancelChanges() {
@@ -82,7 +131,7 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true, // Allow resizing when keyboard appears
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text('Voucher Details - ${widget.voucher.id}'),
         leading: IconButton(
@@ -92,93 +141,132 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
           },
         ),
       ),
-      body: SingleChildScrollView( // Make content scrollable
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('ID: ${widget.voucher.id}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              _isEditing
-                  ? TextField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
-              )
-                  : Text('Description: ${widget.voucher.description}'),
-              const SizedBox(height: 8),
-              _isEditing
-                  ? TextField(
-                controller: _discountController,
-                decoration: const InputDecoration(labelText: 'Discount (%)'),
-                keyboardType: TextInputType.number,
-              )
-                  : Text('Discount: ${widget.voucher.discount}%'),
-              const SizedBox(height: 8),
-              _isEditing
-                  ? TextField(
-                controller: _pointsController,
-                decoration: const InputDecoration(labelText: 'Points'),
-                keyboardType: TextInputType.number,
-              )
-                  : Text('Points: ${widget.voucher.points}'),
-              const SizedBox(height: 8),
-              _isEditing
-                  ? TextField(
-                controller: _totalController,
-                decoration: const InputDecoration(labelText: 'Total'),
-                keyboardType: TextInputType.number,
-              )
-                  : Text('Total: ${widget.voucher.total}'),
-              const SizedBox(height: 8),
-              _isEditing
-                  ? TextField(
-                controller: _expiredDateController,
-                decoration: const InputDecoration(labelText: 'Expired Date'),
-              )
-                  : Text('Expired Date: ${widget.voucher.expired_date.toString()}'),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (!_isEditing)
-                    ElevatedButton(
-                      onPressed: _toggleEditMode,
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                      child: const Text('Edit'),
-                    )
-                  else
-                    ElevatedButton(
-                      onPressed: _saveChanges,
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                      child: const Text('Save'),
-                    ),
-                  if (!_isEditing)
-                    ElevatedButton(
-                      onPressed: () async {
-                        final voucherProvider = Provider.of<VoucherProvider>(context, listen: false);
-                        await voucherProvider.deleteVoucher(widget.voucher.id);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Voucher deleted')),
-                        );
-                        Navigator.pop(context);
-                        voucherProvider.fetchVoucher();
-                      },
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                      child: const Text('Delete'),
-                    )
-                  else
-                    ElevatedButton(
-                      onPressed: _cancelChanges,
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                      child: const Text('Cancel'),
-                    ),
+                  Text('ID: ${widget.voucher.id}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  _isEditing
+                      ? TextField(
+                    controller: _descriptionController,
+                    decoration: const InputDecoration(labelText: 'Description'),
+                  )
+                      : Text('Description: ${widget.voucher.description}'),
+                  const SizedBox(height: 8),
+                  _isEditing
+                      ? TextField(
+                    controller: _discountController,
+                    decoration: const InputDecoration(labelText: 'Discount (%)'),
+                    keyboardType: TextInputType.number,
+                  )
+                      : Text('Discount: ${widget.voucher.discount}%'),
+                  const SizedBox(height: 8),
+                  _isEditing
+                      ? TextField(
+                    controller: _pointsController,
+                    decoration: const InputDecoration(labelText: 'Points'),
+                    keyboardType: TextInputType.number,
+                  )
+                      : Text('Points: ${widget.voucher.points}'),
+                  const SizedBox(height: 8),
+                  _isEditing
+                      ? TextField(
+                    controller: _totalController,
+                    decoration: const InputDecoration(labelText: 'Total'),
+                    keyboardType: TextInputType.number,
+                  )
+                      : Text('Total: ${widget.voucher.total}'),
+                  const SizedBox(height: 8),
+                  _isEditing
+                      ? TextField(
+                    controller: _expiredDateController,
+                    decoration: const InputDecoration(labelText: 'Expired Date'),
+                  )
+                      : Text('Expired Date: ${widget.voucher.expired_date.toString()}'),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      if (!_isEditing)
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _toggleEditMode,
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                          child: _isLoading
+                              ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                              : const Text('Edit'),
+                        )
+                      else
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _saveChanges,
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                          child: _isLoading
+                              ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                              : const Text('Save'),
+                        ),
+                      if (!_isEditing)
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _deleteVoucher,
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          child: _isLoading
+                              ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                              : const Text('Delete'),
+                        )
+                      else
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _cancelChanges,
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          child: _isLoading
+                              ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                              : const Text('Cancel'),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                 ],
               ),
-              const SizedBox(height: 16), // Add extra space at the bottom to prevent cutoff
-            ],
+            ),
           ),
-        ),
+          if (_isLoading)
+            Container(
+              color: Colors.white.withValues(alpha: 0.7), // Slightly white overlay
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+        ],
       ),
     );
   }

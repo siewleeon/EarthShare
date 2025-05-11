@@ -70,6 +70,7 @@ class MainApp extends StatelessWidget {
           '/manageVoucherPage': (context) => const ManageVoucherList(),
           '/manageUserPage': (context) => const ManageUserPage(),
 
+          '/salesReportPage': (context) => const SalesReport(),
         },
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),

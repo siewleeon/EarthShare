@@ -21,7 +21,7 @@ class _LoginPageState extends State<AdminLoginPage> {
     super.dispose();
   }
 
-  Future<void> _login() async{
+  Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -29,12 +29,12 @@ class _LoginPageState extends State<AdminLoginPage> {
     });
 
     try {
-      if(_userNameController.text != "admin") {
-        throw "user name wrong";
+      if (_userNameController.text != "admin") {
+        throw "Username is incorrect";
       }
 
-      if(_passwordController.text != "admin") {
-        throw "password wrong";
+      if (_passwordController.text != "admin") {
+        throw "Password is incorrect";
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -42,13 +42,11 @@ class _LoginPageState extends State<AdminLoginPage> {
       );
 
       Navigator.pushReplacementNamed(context, '/adminPage');
-    }
-    catch(e) {
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Login failed: $e')),
       );
-    }
-    finally {
+    } finally {
       setState(() {
         _isLoading = false;
       });
@@ -58,59 +56,114 @@ class _LoginPageState extends State<AdminLoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child:SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _userNameController,
-                  decoration: _inputDecoration("User Name"),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter user name';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: _inputDecoration("Password"),
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter email';
-                    }
-                    return null;
-                  },
-                ),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _login,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 60, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Login'),
-                ),
-                Row(
-                  children: [
-                    TextButton(onPressed: () {
-                      Navigator.pop(context);
-                    },
-                      child: const Text("email login",style: TextStyle(color: Colors.blueAccent,
-                          decoration: TextDecoration.underline),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Container(
+              color: Colors.white,
+              child: Image.asset(
+                'assets/images/adminLogin_background.jpg',
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-        ),
+          // 中央内容表单
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 24),
+
+                    // Logo
+                    Image.asset(
+                      'assets/images/adminLogin_logo.png',
+                      width: 200,
+                      height: 200,
+                    ),
+                    const SizedBox(height: 32),
+
+                    // User Name
+                    TextFormField(
+                      controller: _userNameController,
+                      decoration: _inputDecoration("Username"),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter username';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Password
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: _inputDecoration("Password"),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter password';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Login Button
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.lightGreenAccent[100],
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                        elevation: 5,
+                      ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                        'Login',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Email Login Text
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Use Email to Login",
+                          style: TextStyle(color: Colors.black54),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context); // Go back to EmailLoginPage
+                          },
+                          child: const Text(
+                            'Email Login',
+                            style: TextStyle(
+                              color: Colors.blueAccent,
+                              decoration: TextDecoration.underline,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
