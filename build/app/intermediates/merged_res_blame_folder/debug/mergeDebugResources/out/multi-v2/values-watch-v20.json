@@ -4,7 +4,7 @@
             "outputFile": "my.edu.tarc.com.example.p8userprofile.app-mergeDebugResources-50:/values-watch-v20/values-watch-v20.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\MyMSI\\.gradle\\caches\\8.10.2\\transforms\\32b69add1698b4b7dbbf8752e750bc19\\transformed\\jetified-play-services-auth-20.7.0\\res\\values-watch-v20\\values.xml",
+                    "source": "C:\\Users\\Cha\\.gradle\\caches\\8.10.2\\transforms\\32b69add1698b4b7dbbf8752e750bc19\\transformed\\jetified-play-services-auth-20.7.0\\res\\values-watch-v20\\values.xml",
                     "from": {
                         "startLines": "4,5,6,7,8,9,10,11",
                         "startColumns": "0,0,0,0,0,0,0,0",
@@ -21,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\MyMSI\\.gradle\\caches\\8.10.2\\transforms\\600100b204d7991129d8a98098b381e1\\transformed\\appcompat-1.1.0\\res\\values-watch-v20\\values-watch-v20.xml",
+                    "source": "C:\\Users\\Cha\\.gradle\\caches\\8.10.2\\transforms\\600100b204d7991129d8a98098b381e1\\transformed\\appcompat-1.1.0\\res\\values-watch-v20\\values-watch-v20.xml",
                     "from": {
                         "startLines": "2,5,8",
                         "startColumns": "4,4,4",

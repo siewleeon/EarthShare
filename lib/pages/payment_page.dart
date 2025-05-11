@@ -53,26 +53,34 @@ class _PaymentPageState extends State<PaymentPage> {
     }
   }
 
+  List<Map<String, dynamic>> _bankAccounts = [];
+  int _selectedCardIndex = 0;
+
   Future<void> _loadBankDetails() async {
     if (_userID.isEmpty) return;
     
     final accounts = await _dbHelper.getBankAccountsByUserID(_userID);
-    if (accounts.isNotEmpty) {
-      final account = accounts.first;
-      setState(() {
-        _cardNameController.text = account['cardHolder'] ?? '';
-        _cardNumberController.text = account['cardNumber'] ?? '';
-        
-        // 处理过期日期
-        final expiryDate = account['expiryDate'] ?? '';
-        if (expiryDate.length >= 4) {
-          _cardMonthController.text = expiryDate.substring(0, 2);
-          _cardYearController.text = expiryDate.substring(3, 5);
-        }
-        
-        _cvvController.text = account['cvv'] ?? '';
-      });
+    setState(() {
+      _bankAccounts = accounts;
+      if (accounts.isNotEmpty) {
+        _selectedCardIndex = 0;
+        _updateCardFields(accounts[0]);
+      }
+    });
+  }
+
+  void _updateCardFields(Map<String, dynamic> account) {
+    _cardNameController.text = account['cardHolder'] ?? '';
+    _cardNumberController.text = account['cardNumber'] ?? '';
+    
+    // 处理过期日期
+    final expiryDate = account['expiryDate'] ?? '';
+    if (expiryDate.length >= 4) {
+      _cardMonthController.text = expiryDate.substring(0, 2);
+      _cardYearController.text = expiryDate.substring(3, 5);
     }
+    
+    _cvvController.text = account['cvv'] ?? '';
   }
 
   @override
@@ -334,6 +342,48 @@ class _PaymentPageState extends State<PaymentPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (_bankAccounts.isNotEmpty) ...[
+              const Text(
+                'Select Card',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<int>(
+                    value: _selectedCardIndex,
+                    isExpanded: true,
+                    items: List.generate(_bankAccounts.length, (index) {
+                      final account = _bankAccounts[index];
+                      return DropdownMenuItem(
+                        value: index,
+                        child: Text(
+                          '${account['cardHolder']} - ${account['cardNumber'].toString().substring(account['cardNumber'].toString().length - 4)}',
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      );
+                    }),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedCardIndex = value;
+                          _updateCardFields(_bankAccounts[value]);
+                        });
+                      }
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             _buildTextField(
               controller: _cardNameController,
               label: 'Card Name',
