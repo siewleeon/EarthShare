@@ -230,12 +230,17 @@ class OrderCompletedPage extends StatelessWidget {
               color: Colors.grey,
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: valueColor ?? Colors.black,
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: valueColor ?? Colors.black,
+              ),
             ),
           ),
         ],

@@ -5,6 +5,7 @@ import 'package:second_hand_shop/pages/contactUs_page.dart';
 import 'package:second_hand_shop/pages/points_page.dart';
 import './edit_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../pages/voucher_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -101,6 +102,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   buildFeatureButton(
                     label: "Voucher",
                     icon: Icons.confirmation_number,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const VoucherPage(),
+                        ),
+                      );
+                    },
                   ),
                   buildFeatureButton(
                     label: "Earning Points",
@@ -280,19 +289,23 @@ class _ProfilePageState extends State<ProfilePage> {
       onTap: onTap,
       child: SizedBox(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,  // 居中对齐
           children: [
             Container(
-              padding: EdgeInsets.all(20),
+              padding: EdgeInsets.all(12),  // 减小内边距
               decoration: BoxDecoration(
                 color: iconBgColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: Colors.black),
+              child: Icon(icon, color: Colors.black, size: 20),  // 减小图标大小
             ),
-            SizedBox(height: 8),
+            SizedBox(height: 4),  // 减小间距
             Text(
               label,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),  // 减小文字大小
+              textAlign: TextAlign.center,  // 文字居中
+              maxLines: 1,  // 限制一行
+              overflow: TextOverflow.ellipsis,  // 文字溢出时显示省略号
             ),
           ],
         ),
