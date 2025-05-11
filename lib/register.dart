@@ -18,6 +18,7 @@ class _RegisterPageState extends State<RegisterPage> {
   late TextEditingController passwordController;
   late TextEditingController confirmPasswordController;
   String avatarUrl = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -116,6 +117,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _handleRegister() async {
     if (_formKey.currentState!.validate() && agreeToTerms) {
+      setState(() {
+        isLoading = true;
+      });
+
       try {
         final credential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(
@@ -149,6 +154,10 @@ class _RegisterPageState extends State<RegisterPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Registration failed: $e")),
         );
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
       }
     } else if (!agreeToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -272,6 +281,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   ),
                                 ),
                               )
+
                             ],
                           ),
                         ),
@@ -282,8 +292,16 @@ class _RegisterPageState extends State<RegisterPage> {
               );
             },
           ),
+          if (isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+            ),
 
         ],
+
       ),
     );
   }
