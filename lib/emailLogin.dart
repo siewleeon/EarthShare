@@ -29,10 +29,6 @@ class _LoginPageState extends State<EmailLoginPage> {
         password: passwordController.text.trim(),
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login successful!')),
-      );
-
       Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -71,7 +67,13 @@ class _LoginPageState extends State<EmailLoginPage> {
                 key: _formKey,
                 child: Column(
                   children: [
-
+                    const SizedBox(height: 24),
+                    // Logo Image
+                    Image.asset(
+                      'assets/images/emailLogin_logo.png',
+                      width: 250,
+                      height: 250,
+                    ),
                     const SizedBox(height: 24),
                     TextFormField(
                       controller: emailController,
@@ -116,8 +118,7 @@ class _LoginPageState extends State<EmailLoginPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
-                            );
-                          },
+                            );                          },
                           child: const Text(
                             "Forgot password?",
                             style: TextStyle(
@@ -150,7 +151,8 @@ class _LoginPageState extends State<EmailLoginPage> {
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
                       ),
-                      child: _isLoading ? const CircularProgressIndicator(
+                      child: _isLoading
+                          ? const CircularProgressIndicator(
                         color: Colors.white,
                       )
                           : const Text('Login'),

@@ -80,70 +80,82 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 背景图
           Positioned.fill(
             child: Image.asset(
               'assets/images/profile_background.png',
               fit: BoxFit.cover,
             ),
           ),
-          // 前景内容
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                buildTopSection(),
+          // 内容区
+          SafeArea(
+            child: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: screenHeight),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildTopSection(),
 
-                buildCardSection("My Points", [
-                  buildFeatureButton(
-                    label: "Voucher",
-                    icon: Icons.confirmation_number,
-                  ),
-                  buildFeatureButton(
-                    label: "Earning Points",
-                    icon: Icons.monetization_on,
-                    iconBgColor: Colors.purple.shade50,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PointsPage(userId: userId),
-                        ),
-                      );
-                    },
-                  ),
-                ]),
+                    // Points section
+                    buildCardSection("My Points", [
+                      buildFeatureButton(
+                        label: "Voucher",
+                        icon: Icons.confirmation_number,
+                      ),
+                      buildFeatureButton(
+                        label: "Earning Points",
+                        icon: Icons.monetization_on,
+                        iconBgColor: Colors.purple.shade50,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PointsPage(userId: userId),
+                            ),
+                          );
+                        },
+                      ),
+                    ]),
 
-                buildCardSection("My Store", [
-                  buildFeatureButton(
-                    label: "My Post",
-                    icon: Icons.post_add,
-                  ),
-                  buildFeatureButton(
-                    label: "History",
-                    icon: Icons.lock_clock,
-                    iconBgColor: Colors.grey,
-                  ),
-                ]),
+                    // Store section
+                    buildCardSection("My Store", [
+                      buildFeatureButton(
+                        label: "My Post",
+                        icon: Icons.post_add,
+                      ),
+                      buildFeatureButton(
+                        label: "History",
+                        icon: Icons.lock_clock,
+                        iconBgColor: Colors.grey,
+                      ),
+                    ]),
 
-                buildCardSection("Support", [
-                  buildFeatureButton(
-                    label: "Contact Us",
-                    icon: Icons.support_agent,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ContactUsPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ]),
-              ],
+                    // Support section
+                    buildCardSection("Support", [
+                      buildFeatureButton(
+                        label: "Contact Us",
+                        icon: Icons.support_agent,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ContactUsPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ]),
+
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
@@ -151,7 +163,6 @@ class _ProfilePageState extends State<ProfilePage> {
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
-
 
   Widget buildTopSection() {
     return Padding(
@@ -199,14 +210,10 @@ class _ProfilePageState extends State<ProfilePage> {
                         ],
                       ),
                       const SizedBox(height: 4),
-
                       Text(
                         userId,
                         style: const TextStyle(fontSize: 15, color: Colors.grey),
                       ),
-
-
-
                     ],
                   ),
                 ),
@@ -257,10 +264,10 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: const EdgeInsets.all(16),
             child: GridView.count(
               shrinkWrap: true,
-              crossAxisCount: 2,
+              crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 3,
               mainAxisSpacing: 16,
               crossAxisSpacing: 16,
-              childAspectRatio: 1.6,
+              childAspectRatio: MediaQuery.of(context).size.width < 600 ? 1.2 : 1.5, // 适配屏幕尺寸
               physics: NeverScrollableScrollPhysics(),
               children: children,
             ),
@@ -299,6 +306,7 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
+
 
   Widget _buildBottomNavigationBar() {
     return Container(
