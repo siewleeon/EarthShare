@@ -355,12 +355,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    // 获取设备屏幕宽度和高度
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    // 获取当前屏幕方向
-    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Edit Profile')),
@@ -384,18 +379,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 const SizedBox(height: 8),
                 const Text("Tap to change profile picture"),
 
-                // 姓名输入框
                 TextField(
                   controller: nameController,
                   decoration: const InputDecoration(labelText: 'Name'),
                 ),
-                // 电话输入框
                 TextField(
                   controller: phoneController,
                   decoration: const InputDecoration(labelText: 'Phone'),
                   keyboardType: TextInputType.phone,
                 ),
-                // 邮箱输入框
                 TextField(
                   controller: emailController,
                   decoration: const InputDecoration(labelText: 'Email'),
@@ -410,7 +402,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ),
                 const SizedBox(height: 20),
 
-                // 保存按钮
                 ElevatedButton(
                   onPressed: _saveProfile,
                   child: const Text('Save'),
