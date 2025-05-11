@@ -29,12 +29,16 @@ class _ProductEditDialogState extends State<ProductEditDialog> {
 
   final picker = ImagePicker();
   final List<String> categories = [
-    'Electronics',
-    'Clothing',
-    'Books',
-    'Home & Kitchen',
-    'Toys',
-    'Other'
+    'Shoes',
+    'Fashion',
+    'Toy',
+    'Furniture',
+    'Beauty',
+    'Health',
+    'Game',
+    'Camera',
+    'Other',
+    'Electronic'
   ];
 
   @override

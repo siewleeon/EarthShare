@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:second_hand_shop/pages/product_detail_page.dart';
@@ -16,6 +18,7 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  String userId = '';
 
   @override
   void initState() {
@@ -24,6 +27,22 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
       duration: const Duration(seconds: 20),
       vsync: this,
     )..repeat();
+  }
+
+  void _loadUser() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    final UID = currentUser.uid;
+
+    DocumentSnapshot doc =
+    await FirebaseFirestore.instance.collection('Users').doc(UID).get();
+    if (doc.exists) {
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+      setState(() {
+        userId=data['userId'] ?? '';
+      });
+    }
   }
 
   @override
@@ -341,7 +360,6 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                                   ),
                                 ),
                               ),
-                              _buildCategoryItem(context, Icons.category, 'Other', Colors.black), // 最後一個不加 padding
                             ],
                           ),
                         ),
@@ -563,15 +581,14 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
 
 
   Widget _buildRecentProducts(BuildContext context) {
+    _loadUser();
     return Consumer<ProductProvider>(
       builder: (context, productProvider, child) {
         final recentProducts = productProvider.products
             .where((product) =>
-        product.qty > 0 && product.sellerId != userId) // 条件筛选
+        product.quantity > 0 && product.sellerId != userId) // 条件筛选
             .toList();
 
-        // 根据时间排序（假设你有一个 DateTime 类型字段 product.createdAt）
-        recentProducts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
         // 只保留前五个
         final topFive = recentProducts.take(5).toList();

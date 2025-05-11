@@ -272,7 +272,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildCategories() {
-    final categories = ['All', 'Shoes', 'Fashion', 'Toy', 'Furniture','Beauty','Health','Game','Camera','Other'];
+    final categories = ['All', 'Shoes', 'Fashion','Electronic', 'Toy', 'Furniture','Beauty','Health','Game','Camera','Other'];
 
     return Container(
       height: 40,

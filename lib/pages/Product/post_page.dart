@@ -253,7 +253,7 @@ class _PostPageState extends State<PostPage> {
   }
 
   Widget _buildCategorySelector() {
-    final categories = ['Shoes', 'Fashion', 'Toy', 'Furniture','Beauty','Health','Game','Camera','Other'];
+    final categories = ['Shoes', 'Fashion','Electronic', 'Toy', 'Furniture','Beauty','Health','Game','Camera','Other'];
     return Wrap(
       spacing: 8,
       children: categories.map((category) {
