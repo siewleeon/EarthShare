@@ -401,20 +401,6 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                       const Divider(),
 
 // 🔻 Product Grid 加動畫（從左滑入）
-                      AnimatedSlideIn(
-                        child: SizedBox(
-                          height: 210,
-                          child: ListView(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            children: [
-                              _buildRecentProducts(context),
-
-                            ],
-                          ),
-                        ),
-                      ),
-
                       const SizedBox(height: 16),
 
 // 🔻 Save Earth Banner 加動畫（從右滑入）
@@ -579,117 +565,6 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
     );
   }
 
-
-  Widget _buildRecentProducts(BuildContext context) {
-    _loadUser();
-    return Consumer<ProductProvider>(
-      builder: (context, productProvider, child) {
-        final recentProducts = productProvider.products
-            .where((product) =>
-        product.quantity > 0 && product.sellerId != userId) // 条件筛选
-            .toList();
-
-
-        // 只保留前五个
-        final topFive = recentProducts.take(5).toList();
-
-        if (topFive.isEmpty) {
-          return const Center(
-            child: Text(
-              '暂无可显示的最新产品',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-          );
-        }
-
-        return SizedBox(
-          height: 220,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: topFive.length,
-            itemBuilder: (context, index) {
-              final product = topFive[index];
-
-              return InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ProductDetailPage(productId: product.id),
-                    ),
-                  );
-                },
-                child: Container(
-                  width: 150,
-                  margin: const EdgeInsets.only(left: 16.0, right: 8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          product.imageId.first,
-                          height: 120,
-                          width: 150,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              height: 120,
-                              width: 150,
-                              color: Colors.grey[200],
-                              child: const Icon(Icons.image_not_supported, color: Colors.grey),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        product.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.green[100],
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Text(
-                              'new',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.green,
-                              ),
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                'RM ${product.price.toStringAsFixed(2)}',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(Icons.camera_alt, size: 16, color: Colors.grey),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
 
 
   Widget _buildNavItem(BuildContext context, IconData icon, String label, bool isSelected, String route) {
