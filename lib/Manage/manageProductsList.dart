@@ -1,0 +1,335 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/product_provider.dart';
+import 'product_detail_page.dart';
+import 'add_product_page.dart';
+
+class ManageProductsList extends StatefulWidget {
+  const ManageProductsList({super.key});
+
+  @override
+  State<ManageProductsList> createState() => _ListPageState();
+}
+
+class _ListPageState extends State<ManageProductsList> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.toLowerCase();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void changePage(int page) {
+    switch (page) {
+      case 0:
+        debugPrint("home");
+        Navigator.pushReplacementNamed(context, "/adminPage");
+        break;
+      case 1:
+        debugPrint("user");
+        Navigator.pushReplacementNamed(context, "/manageUserPage");
+        break;
+      case 2:
+        debugPrint("voucher");
+        Navigator.pushReplacementNamed(context, "/manageVoucherPage");
+        break;
+      case 3:
+        debugPrint("product");
+        Navigator.pushReplacementNamed(context, "/manageProductsPage");
+        break;
+      case 4:
+        debugPrint("report");
+        Navigator.pushReplacementNamed(context, "/salesReportPage");
+        break;
+      case 5:
+        debugPrint("logout");
+        Navigator.pushNamedAndRemoveUntil(context, '/adminLogin', (Route<dynamic> route) => false);
+        break;
+      default:
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ProductProvider>(context, listen: false).fetchProducts();
+    });
+
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildSearchBar(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildSortButton(),
+                const SizedBox(width: 8),
+                _buildAddButton(),
+              ],
+            ),
+            Expanded(child: _buildProductList()),
+          ],
+        ),
+      ),
+      bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: Row(
+        children: [
+
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search by name or description',
+                border: InputBorder.none,
+                hintStyle: TextStyle(color: Colors.grey[400]),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                  icon: const Icon(Icons.clear, color: Colors.grey),
+                  onPressed: () {
+                    _searchController.clear();
+                  },
+                )
+                    : null,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSortButton() {
+    return Builder(
+      builder: (context) => GestureDetector(
+        onTap: () {
+          Provider.of<ProductProvider>(context, listen: false).toggleSortProductsById();
+        },
+        child: Container(
+          width: 44,
+          height: 44,
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.green,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.green.withValues(alpha: 0.3),
+                spreadRadius: 2,
+                blurRadius: 5,
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.sort,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddButton() {
+    return Builder(
+      builder: (context) => GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddProductPage(),
+            ),
+          );
+        },
+        child: Container(
+          width: 44,
+          height: 44,
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withValues(alpha: 0.3),
+                spreadRadius: 2,
+                blurRadius: 5,
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.add,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProductList() {
+    return Consumer<ProductProvider>(
+      builder: (context, productProvider, child) {
+        if (productProvider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (productProvider.error != null) {
+          return Center(
+            child: Text(
+              'Load failed: ${productProvider.error}',
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
+        }
+
+        final products = productProvider.searchProducts(_searchQuery);
+
+        if (products.isEmpty) {
+          return const Center(child: Text("No products found"));
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16.0),
+          itemCount: products.length,
+          itemBuilder: (context, index) {
+            final product = products[index];
+            return Card(
+              elevation: 2,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              child: ListTile(
+                leading: Text(
+                  product.id,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                title: Text(
+                  product.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  product.description,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProductDetailPage(product: product),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
+                  child: const Text('Detail', style: TextStyle(color: Colors.white)),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha:0.5),
+            spreadRadius: 1,
+            blurRadius: 5,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavItem(Icons.person_outline, "User", false),
+            _buildNavItem(Icons.local_offer, "Voucher", false),
+            _buildNavItem(Icons.home, "Home", false),
+            _buildNavItem(Icons.store, "Products", true),
+            _buildNavItem(Icons.insert_chart, "Report", false),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
+    return Builder(
+      builder: (context) => GestureDetector(
+        onTap: () {
+          switch (label) {
+            case 'Home':
+              changePage(0);
+              break;
+            case 'User':
+              changePage(1);
+              break;
+            case 'Voucher':
+              changePage(2);
+              break;
+            case 'Products':
+              changePage(3);
+              break;
+            case 'Report':
+              changePage(4);
+              break;
+          }
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: isSelected ? const EdgeInsets.all(8) : EdgeInsets.zero,
+              decoration: isSelected
+                  ? BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.blue[100],
+              )
+                  : null,
+              child: Icon(
+                icon,
+                color: isSelected ? Colors.blue : Colors.grey,
+              ),
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.blue : Colors.grey,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

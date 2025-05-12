@@ -40,6 +40,7 @@ class _ListPageState extends State<ManageVoucherList> {
         break;
       case 1:
         debugPrint("user");
+        Navigator.pushReplacementNamed(context, "/manageUserPage");
         break;
       case 2:
         debugPrint("voucher");
@@ -47,6 +48,7 @@ class _ListPageState extends State<ManageVoucherList> {
         break;
       case 3:
         debugPrint("product");
+        Navigator.pushReplacementNamed(context, "/manageProductPage");
         break;
       case 4:
         debugPrint("report");
@@ -100,12 +102,7 @@ class _ListPageState extends State<ManageVoucherList> {
       ),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.grey),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
+
           const SizedBox(width: 8),
           Expanded(
             child: TextField(

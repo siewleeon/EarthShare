@@ -31,6 +31,7 @@ class _SalesReportState extends State<SalesReport> {
         break;
       case 1:
         debugPrint("user");
+        Navigator.pushReplacementNamed(context, "/manageUserPage");
         break;
       case 2:
         debugPrint("voucher");
@@ -38,6 +39,7 @@ class _SalesReportState extends State<SalesReport> {
         break;
       case 3:
         debugPrint("product");
+        Navigator.pushReplacementNamed(context, "/manageProductPage");
         break;
       case 4:
         debugPrint("report");
@@ -67,13 +69,10 @@ class _SalesReportState extends State<SalesReport> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+
         title: const Text('Sales Report'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+
       ),
       body: SafeArea(
         child: Column(

@@ -86,8 +86,15 @@ class _LoginPageState extends State<AdminLoginPage> {
                       width: 200,
                       height: 200,
                     ),
-                    const SizedBox(height: 32),
-
+                    const Text(
+                      "Admin Login Page",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 25),
                     // User Name
                     TextFormField(
                       controller: _userNameController,
@@ -141,8 +148,8 @@ class _LoginPageState extends State<AdminLoginPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
-                          "Use Email to Login",
-                          style: TextStyle(color: Colors.black54),
+                          "Back to User Login",
+                          style: TextStyle(color: Colors.black54,fontWeight: FontWeight.bold),
                         ),
                         TextButton(
                           onPressed: () {
@@ -152,7 +159,7 @@ class _LoginPageState extends State<AdminLoginPage> {
                             );
                           },
                           child: const Text(
-                            'mainLogin',
+                            'back',
                             style: TextStyle(
                               color: Colors.blueAccent,
                               decoration: TextDecoration.underline,

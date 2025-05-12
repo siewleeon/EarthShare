@@ -80,8 +80,14 @@ class _LoginPageState extends State<EmailLoginPage> {
                       width: 200,
                       height: 200,
                     ),
-                    const SizedBox(height: 32),
-
+                    const Text(
+                      "Login",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 25),
                     // Email
                     TextFormField(
                       controller: emailController,
