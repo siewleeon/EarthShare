@@ -413,11 +413,50 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Profile'),
-        backgroundColor: Colors.deepPurple, // 设置AppBar颜色
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(screenHeight * 0.1),
+        child: AppBar(
+          backgroundColor: const Color(0xFFCCFF66),
+          elevation: 0,
+          centerTitle: true,
+          title: const Text(
+            'Edit Profile',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 4,
+                    offset: Offset(2, 2),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(30),
+              bottomRight: Radius.circular(30),
+            ),
+          ),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -447,7 +486,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     style: TextStyle(
                       fontSize: 14,
                       fontStyle: FontStyle.italic,
-                      color: Colors.deepPurple,
+                      color: const Color(0xFF66CCFF),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -456,7 +495,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     controller: nameController,
                     decoration: InputDecoration(
                       labelText: 'Name',
-                      labelStyle: TextStyle(color: Colors.deepPurple),
+                      labelStyle: TextStyle(color: const Color(0xFF66CCFF),fontSize: 22),
                       hintText: 'Enter your name',
                       hintStyle: TextStyle(color: Colors.grey[400]),
                       filled: true,
@@ -467,7 +506,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.deepPurple, width: 2),
+                        borderSide: BorderSide(color: const Color(0xFF66CCFF), width: 2),
                       ),
                     ),
                     validator: validateName,
@@ -479,7 +518,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     controller: phoneController,
                     decoration: InputDecoration(
                       labelText: 'Phone',
-                      labelStyle: TextStyle(color: Colors.deepPurple),
+                      labelStyle: TextStyle(color: const Color(0xFF66CCFF),fontSize: 22),
                       hintText: 'Enter your phone number',
                       hintStyle: TextStyle(color: Colors.grey[400]),
                       filled: true,
@@ -490,7 +529,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.deepPurple, width: 2),
+                        borderSide: BorderSide(color: const Color(0xFF66CCFF), width: 2),
                       ),
                     ),
                     keyboardType: TextInputType.phone,
@@ -503,7 +542,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     controller: emailController,
                     decoration: InputDecoration(
                       labelText: 'Email',
-                      labelStyle: TextStyle(color: Colors.deepPurple),
+                      labelStyle: TextStyle(color: const Color(0xFF66CCFF),fontSize: 22),
                       hintText: 'Enter your email',
                       hintStyle: TextStyle(color: Colors.grey[400]),
                       filled: true,
@@ -514,7 +553,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.deepPurple, width: 2),
+                        borderSide: BorderSide(color: const Color(0xFF66CCFF), width: 2),
                       ),
                     ),
                     keyboardType: TextInputType.emailAddress,
@@ -526,7 +565,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ElevatedButton(
                     onPressed: _changePassword,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple, // 按钮颜色
+                      backgroundColor: const Color(0xFF66CCFF), // 按钮颜色
                       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -544,7 +583,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ElevatedButton(
                     onPressed: _saveProfile,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple, // 按钮颜色
+                      backgroundColor:  const Color(0xFFCCFF66), // 按钮颜色
                       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -552,7 +591,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     ),
                     child: const Text(
                       'Save',
-                      style: TextStyle(fontSize: 16,color: Colors.white),
+                      style: TextStyle(fontSize: 16,color: Colors.black),
                     ),
                   ),
                 ],

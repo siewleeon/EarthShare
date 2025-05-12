@@ -64,8 +64,6 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
           // 旋轉的背景圖片
           // 修改旋轉背景部分
           // 修改旋轉背景部分 - 減小圖片尺寸
-
-
           // 主要內容
           Column(
             children: [
@@ -80,14 +78,14 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey,
+                      color: Colors.teal,
                       spreadRadius: 1,
                       blurRadius: 5,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                padding: const EdgeInsets.fromLTRB(16, 50, 16, 16),
+                padding: const EdgeInsets.fromLTRB(16, 30, 16, 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -104,7 +102,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                           },
                           child: Image.asset(
                             'assets/images/eslogo.png',
-                            height: 28,
+                            height: 40,
                             errorBuilder: (context, error, stackTrace) {
                               return const SizedBox(width: 28);
                             },

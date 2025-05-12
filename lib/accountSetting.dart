@@ -27,7 +27,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(screenHeight * 0.1), // 根据屏幕高度动态调整
+        preferredSize: Size.fromHeight(screenHeight * 0.1),
         child: AppBar(
           backgroundColor: const Color(0xFFCCFF66),
           elevation: 0,

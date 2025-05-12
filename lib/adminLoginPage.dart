@@ -155,7 +155,7 @@ class _LoginPageState extends State<AdminLoginPage> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+                              MaterialPageRoute(builder: (context) => const LandingPage()),
                             );
                           },
                           child: const Text(
