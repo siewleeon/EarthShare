@@ -3,11 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:second_hand_shop/pages/cart_page.dart';
-import 'package:second_hand_shop/pages/product_detail_page.dart';
 import 'dart:math';
 import '../providers/cart_provider.dart';
-import '../providers/product_provider.dart';
-import 'Product/post_page.dart';
+import '../widgets/bottom_nav_bar.dart';
 import 'home_page.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -548,7 +546,27 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: 0,  // History 页面对应的索引
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              break;
+            case 1:
+              Navigator.pushNamed(context, '/search');
+              break;
+            case 2:
+              Navigator.pushNamed(context, '/post');
+              break;
+            case 3:
+              Navigator.pushNamed(context, '/history');
+              break;
+            case 4:
+              Navigator.pushNamed(context, '/profile');
+              break;
+          }
+        },
+      ),
     );
   }
 
@@ -591,105 +609,6 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
     );
   }
 
-  Widget _buildBottomNavigationBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey,
-            spreadRadius: 1,
-            blurRadius: 5,
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(Icons.home, 'Home', true),
-            _buildNavItem(Icons.search, 'Search', false),
-            _buildAddButton(),
-            _buildNavItem(Icons.history, 'History', false),
-            _buildNavItem(Icons.person, 'Profile', false,),
-
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
-    return Builder(
-      builder: (context) => GestureDetector(
-        onTap: () {
-          switch (label) {
-            case 'Home':
-              Navigator.pushNamed(context, '/home');
-              break;
-            case 'Search':
-              Navigator.pushNamed(context, '/search');
-              break;
-            case 'History':
-              Navigator.pushNamed(context, '/history');
-              break;
-            case 'Profile':
-              Navigator.pushNamed(context, '/profile');
-              break;
-          }
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.blue : Colors.grey,
-            ),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.blue : Colors.grey,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAddButton() {
-    return InkWell(
-      onTap: () {
-        Navigator.pushNamed(context, '/post');
-      },
-      child: Container(
-        height: 40,
-        width: 40,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: [Colors.cyanAccent, Colors.green[400]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.green,
-              spreadRadius: 1,
-              blurRadius: 6,
-            ),
-          ],
-        ),
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
-          size: 30,
-        ),
-      ),
-    );
-  }
 }
 
 class AnimatedSlideInFromRight extends StatefulWidget {

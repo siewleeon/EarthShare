@@ -2,10 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:second_hand_shop/accountSetting.dart';
 import 'package:second_hand_shop/pages/Product/YourStoragePage.dart';
-import 'package:second_hand_shop/pages/Product/post_page.dart';
 import 'package:second_hand_shop/pages/contactUs_page.dart';
 import 'package:second_hand_shop/pages/history_page.dart';
 import 'package:second_hand_shop/pages/points_page.dart';
+import 'package:second_hand_shop/widgets/bottom_nav_bar.dart';
 import './edit_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../pages/voucher_page.dart';
@@ -186,8 +186,27 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
-    );
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: 4,  // History 页面对应的索引
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushNamed(context, '/home');
+              break;
+            case 1:
+              Navigator.pushNamed(context, '/search');
+              break;
+            case 2:
+              Navigator.pushNamed(context, '/post');
+              break;
+            case 3:
+              Navigator.pushNamed(context, '/history');
+              break;
+            case 4:
+              break;
+          }
+        },
+      ),    );
   }
 
   Widget buildTopSection() {
@@ -343,104 +362,5 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildBottomNavigationBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey,
-            spreadRadius: 1,
-            blurRadius: 5,
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(Icons.home, 'Home', false),
-            _buildNavItem(Icons.search, 'Search', false),
-            _buildAddButton(),
-            _buildNavItem(Icons.history, 'History', false),
-            _buildNavItem(Icons.person, 'Profile', true),
-
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
-    return Builder(
-      builder: (context) => GestureDetector(
-        onTap: () {
-          switch (label) {
-            case 'Home':
-              Navigator.pushNamed(context, '/home');
-              break;
-            case 'Search':
-              Navigator.pushNamed(context, '/search');
-              break;
-            case 'History':
-              Navigator.pushNamed(context, '/history');
-              break;
-            case 'Profile':
-              Navigator.pushNamed(context, '/profile');
-              break;
-          }
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.blue : Colors.grey,
-            ),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.blue : Colors.grey,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAddButton() {
-    return InkWell(
-      onTap: () {
-        Navigator.pushNamed(context, '/post');
-      },
-      child: Container(
-        height: 40,
-        width: 40,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: [Colors.cyanAccent, Colors.green[400]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.green,
-              spreadRadius: 1,
-              blurRadius: 6,
-            ),
-          ],
-        ),
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
-          size: 30,
-        ),
-      ),
-    );
-  }
 
 }

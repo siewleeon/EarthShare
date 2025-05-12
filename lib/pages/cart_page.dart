@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:second_hand_shop/pages/Product/post_page.dart';
-import '../models/product.dart';
 import '../models/cart.dart';
 import '../providers/cart_provider.dart';
-import '../widgets/bottom_nav_bar.dart';
 import '../pages/order_summary_page.dart';
-import '../pages/history_page.dart';
 
 class CartPage extends StatefulWidget  {
   const CartPage({super.key});
@@ -31,38 +27,6 @@ class _CartPageState extends State<CartPage> {
                   child: cart.items.isEmpty
                       ? _buildEmptyCart(context)
                       : _buildCartItems(context, cart),
-                ),
-                BottomNavBar(
-                  currentIndex: -1,
-                  onTap: (index) {
-                    switch (index) {
-                      case 0: // Home
-                        Navigator.pop(context);
-                        break;
-                      case 1: // Search
-                        // TODO: 实现搜索页面导航
-                        break;
-                      case 2: // Post
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const PostPage(),
-                          ),
-                        );
-                        break;
-                      case 3: // History
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const HistoryPage(),
-                          ),
-                        );
-                        break;
-                      case 4: // Profile
-                        // TODO: 实现个人资料页面导航
-                        break;
-                    }
-                  },
                 ),
               ],
             );
@@ -289,7 +253,6 @@ class _CartPageState extends State<CartPage> {
 
     return Column(
       children: [
-        _buildSearchUI(),
         if (filteredItems.isEmpty)
           Expanded(
             child: Center(
@@ -319,29 +282,6 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _buildSearchUI() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: '搜索商品名称',
-          prefixIcon: const Icon(Icons.search),
-          filled: true,
-          fillColor: Colors.grey[100],
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide.none,
-          ),
-        ),
-        onChanged: (value) {
-          setState(() {
-            searchQuery = value;
-          });
-        },
-      ),
-    );
-  }
-
   Widget _buildCartItem(
     BuildContext context,
     CartItem item,
@@ -355,7 +295,7 @@ class _CartPageState extends State<CartPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey,
             spreadRadius: 1,
             blurRadius: 5,
           ),
@@ -500,7 +440,7 @@ class _CartPageState extends State<CartPage> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey,
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, -2),

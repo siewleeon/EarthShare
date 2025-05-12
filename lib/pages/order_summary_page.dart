@@ -8,6 +8,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
 import '../models/point.dart';
 import '../providers/point_provider.dart';
+import '../services/points_service.dart';
+
 
 class OrderSummaryPage extends StatefulWidget {
   const OrderSummaryPage({super.key});
@@ -21,7 +23,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
   final _addressController = TextEditingController();
   List<String> _savedAddresses = [];
   final _dbHelper = UserDataDatabaseHelper();
-  
+
 
   Future<int> _getUserPoints() async {
     final currentUser = FirebaseAuth.instance.currentUser;
@@ -32,9 +34,9 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
         .collection('Users')
         .doc(UID)
         .get();
-    
+
     if (!userDoc.exists) return 0;
-    
+
     final userId = userDoc.data()?['userId'];
     if (userId == null) return 0;
 
@@ -118,15 +120,16 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                     minHeight: 16,
                   ),
                   child: Consumer<CartProvider>(
-                    builder: (context, cart, child) => Text(
-                      '${cart.itemCount}',  // 将 itemCount 转换为字符串
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                    builder: (context, cart, child) =>
+                        Text(
+                          '${cart.itemCount}', // 将 itemCount 转换为字符串
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                   ),
                 ),
               ),
@@ -155,7 +158,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                   ),
                 ),
               ),
-              _buildBottomNavBar(),
+
             ],
           );
         },
@@ -232,77 +235,6 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
     );
   }
 
-  Widget _buildBottomNavBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(Icons.home_outlined, 'Home', true),
-              _buildNavItem(Icons.search, 'Search', false),
-              _buildCenterNavItem(),
-              _buildNavItem(Icons.history, 'History', false),
-              _buildNavItem(Icons.person_outline, 'Profile', false),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: isSelected ? Colors.green : Colors.grey,
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.green : Colors.grey,
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCenterNavItem() {
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        color: Colors.green,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.green.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: const Icon(
-        Icons.add,
-        color: Colors.white,
-        size: 30,
-      ),
-    );
-  }
 
   Widget _buildCartItems(CartProvider cart) {
     return Container(
@@ -310,7 +242,8 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: cart.items.values.map((item) => _buildCartItem(item)).toList(),
+        children: cart.items.values.map((item) => _buildCartItem(item))
+            .toList(),
       ),
     );
   }
@@ -508,7 +441,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
 
       final voucherDoc = voucherQuery.docs.first;
       final voucherData = voucherDoc.data();
-      
+
       // 检查优惠券是否还有剩余数量
       final total = voucherData['total'] ?? 0;
       if (total <= 0) {
@@ -519,20 +452,35 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
       }
 
       // 检查优惠券是否过期
-      final expiredDate = (voucherData['expired_date'] as firestore.Timestamp).toDate();
+      final expiredDate = (voucherData['expired_date'] as firestore.Timestamp)
+          .toDate();
       if (expiredDate.isBefore(DateTime.now())) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('voucher expired')),
         );
         return;
       }
-
       // 检查用户积分是否足够
       final requiredPoints = voucherData['point'] ?? 0;
-      final userPoints = await _getUserPoints();
+
+      final userDoc = await firestore.FirebaseFirestore.instance
+          .collection('Users')
+          .doc(currentUser.uid)
+          .get();
+
+      if (!userDoc.exists) return;
+
+      final userId = userDoc.data()?['userId'];
+      if (userId == null) return;
+
+      final userPoints = await PointsService.getUserTotalPoints(userId);
+      // 检查用户积分是否足够
+      // final requiredPoints = voucherData['point'] ?? 0;
+      // final userPoints = await _getUserPoints();
       if (userPoints < requiredPoints) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('points not enough, need $requiredPoints point')),
+          SnackBar(
+              content: Text('points not enough, need $requiredPoints point')),
         );
         return;
       }
@@ -555,7 +503,6 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('voucher applied')),
       );
-
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('voucher ERROR: $e')),
@@ -568,11 +515,13 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
     final productTotal = cart.totalAmount;
     final expressShipFee = _expressShipping ? 10.0 : 0.0;
     final shippingFee = 10.0;
-    
+
     // 计算折扣金额
-    final voucherDiscount = _isVoucherApplied ? (productTotal * _discountPercentage) : 0.0;
+    final voucherDiscount = _isVoucherApplied ? (productTotal *
+        _discountPercentage) : 0.0;
     final salesTax = (productTotal - voucherDiscount) * 0.06; // 应用折扣后再计算税
-    final totalPayment = productTotal + expressShipFee + shippingFee - voucherDiscount + salesTax;
+    final totalPayment = productTotal + expressShipFee + shippingFee -
+        voucherDiscount + salesTax;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -593,9 +542,10 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
           _buildPaymentRow('Shipping Fee', shippingFee),
           // 总是显示折扣行，金额为0时也显示
           _buildPaymentRow(
-            'Voucher Discount${_isVoucherApplied ? ' (${(_discountPercentage * 100).toInt()}%)' : ''}',
-            voucherDiscount,
-            isDiscount: true
+              'Voucher Discount${_isVoucherApplied ? ' (${(_discountPercentage *
+                  100).toInt()}%)' : ''}',
+              voucherDiscount,
+              isDiscount: true
           ),
           _buildPaymentRow('Sales Tax (6%)', salesTax, isTax: true),
           const SizedBox(height: 8),
@@ -618,35 +568,41 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                       .collection('Users')
                       .doc(UID)
                       .get();
-                  
+
                   if (doc.exists) {
                     final data = doc.data() as Map<String, dynamic>;
                     final userId = data['userId'] ?? '';
-                    
+
                     // 获取当前积分
-                    final currentPoints = await _getUserPoints();
-                    
+                    // final currentPoints = await _getUserPoints();
+                    final currentPoints = await PointsService
+                        .getUserTotalPoints(userId);
+
                     // 计算新的积分
-                    final points = _isVoucherApplied 
-                        ? currentPoints - _requiredPoints  // 如果使用了优惠券，减去所需积分
-                        : currentPoints + (totalPayment * 10).round();  // 否则增加购物积分
-                    
+                    final points = _isVoucherApplied
+                        ? _requiredPoints // 如果使用了优惠券，减去所需积分
+                        : (totalPayment * 10).round(); // 否则增加购物积分
+
                     // 生成新的积分ID
                     final timestamp = firestore.Timestamp.now();
-                    final pointId = 'P${timestamp.seconds}${timestamp.nanoseconds}';
-                    
+                    final pointId = 'P${timestamp.seconds}${timestamp
+                        .nanoseconds}';
+
                     // 创建积分记录
                     final point = Point(
                       pointId: pointId,
                       userId: userId,
                       points: points,
-                      description: _isVoucherApplied ? 'Points deducted for voucher' : 'Points earned from purchase',
+                      description: _isVoucherApplied
+                          ? 'Points deducted for voucher'
+                          : 'Points earned from purchase',
                       createdAt: DateTime.now(),
                       isIncrease: !_isVoucherApplied,
                     );
-                    
+
                     // 添加积分记录
-                    final pointProvider = Provider.of<PointProvider>(context, listen: false);
+                    final pointProvider = Provider.of<PointProvider>(
+                        context, listen: false);
                     await pointProvider.addPoints(point);
                   }
                 }
@@ -656,10 +612,11 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PaymentPage(
-                        shippingAddress: _addressController.text,
-                        finalAmount: totalPayment
-                      ),
+                      builder: (context) =>
+                          PaymentPage(
+                              shippingAddress: _addressController.text,
+                              finalAmount: totalPayment
+                          ),
                     ),
                   );
                 }
@@ -714,10 +671,10 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
               color: isDiscount
                   ? Colors.green
                   : isTax
-                      ? Colors.red
-                      : isTotal
-                          ? Colors.black
-                          : Colors.grey[600],
+                  ? Colors.red
+                  : isTotal
+                  ? Colors.black
+                  : Colors.grey[600],
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
               fontSize: isTotal ? 16 : 14,
             ),
@@ -750,7 +707,9 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                   controller: _voucherController,
                   enabled: !_isVoucherApplied,
                   decoration: InputDecoration(
-                    hintText: _isVoucherApplied ? 'this voucher used' : 'enter voucher code',
+                    hintText: _isVoucherApplied
+                        ? 'this voucher used'
+                        : 'enter voucher code',
                     hintStyle: TextStyle(
                       fontSize: 14,
                       color: _isVoucherApplied ? Colors.grey : Colors.grey[600],
@@ -793,7 +752,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                   ),
                 );
               }
-              
+
               if (snapshot.hasError) {
                 return const Text(
                   '无法加载积分',

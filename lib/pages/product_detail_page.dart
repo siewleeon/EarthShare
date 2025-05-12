@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
-import '../main.dart';  // 导入 navigatorKey
-import '../widgets/bottom_nav_bar.dart';
 import '../providers/cart_provider.dart';
-import '../providers/product_provider.dart';  // 添加这行
+import '../providers/product_provider.dart';
 import 'cart_page.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -59,29 +57,6 @@ class ProductDetailPage extends StatelessWidget {
                       child: SingleChildScrollView(
                         child: _buildProductInfo(product),
                       ),
-                    ),
-                    BottomNavBar(
-                      currentIndex: -1, // 不高亮任何选项，因为这是详情页
-                      onTap: (index) {
-                        // 根据index处理导航
-                        switch (index) {
-                          case 0: // Home
-                            Navigator.popUntil(context, (route) => route.isFirst);
-                            break;
-                          case 1: // Search
-                            // TODO: 实现搜索页面导航
-                            break;
-                          case 2: // Post
-                            // TODO: 实现发布页面导航
-                            break;
-                          case 3: // History
-                            // TODO: 实现历史页面导航
-                            break;
-                          case 4: // Profile
-                            // TODO: 实现个人资料页面导航
-                            break;
-                        }
-                      },
                     ),
                   ],
                 ),
@@ -219,7 +194,7 @@ class ProductDetailPage extends StatelessWidget {
                 dotHeight: 10,
                 dotWidth: 10,
                 activeDotColor: Colors.white,
-                dotColor: Colors.white.withOpacity(0.4),
+                dotColor: Colors.white,
               ),
             ),
           ),

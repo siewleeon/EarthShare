@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/cart_provider.dart';
 import '../providers/transaction_provider.dart';
-import '../providers/point_provider.dart';
 import '../providers/product_provider.dart';
-import '../models/point.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -22,6 +19,7 @@ class OrderCompletedPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     // 在页面构建时加载交易历史
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final currentUser = FirebaseAuth.instance.currentUser;
@@ -46,10 +44,8 @@ class OrderCompletedPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.lightGreen[100],
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false,
+
         title: const Text(
           'EarthShare',
           style: TextStyle(
@@ -73,7 +69,6 @@ class OrderCompletedPage extends StatelessWidget {
               ),
             ),
           ),
-          _buildBottomNavBar(),
         ],
       ),
     );
@@ -183,7 +178,7 @@ class OrderCompletedPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black,
                 blurRadius: 10,
                 offset: const Offset(0, 5),
               ),
@@ -398,76 +393,4 @@ class OrderCompletedPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomNavBar() {
-    return Container(
-      width: double.infinity,  // 添加这行确保宽度填充
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16), // 减小水平内边距
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly, // 改为 spaceEvenly
-            children: [
-              Flexible(child: _buildNavItem(Icons.home_outlined, 'Home', true)),
-              Flexible(child: _buildNavItem(Icons.search, 'Search', false)),
-              Flexible(child: _buildCenterNavItem()),
-              Flexible(child: _buildNavItem(Icons.history, 'History', false)),
-              Flexible(child: _buildNavItem(Icons.person_outline, 'Profile', false)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: isSelected ? Colors.green : Colors.grey,
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.green : Colors.grey,
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCenterNavItem() {
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        color: Colors.green,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.green.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: const Icon(
-        Icons.add,
-        color: Colors.white,
-        size: 30,
-      ),
-    );
-  }
 }

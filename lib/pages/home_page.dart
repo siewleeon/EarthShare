@@ -6,7 +6,7 @@ import 'package:second_hand_shop/pages/product_detail_page.dart';
 
 import '../providers/cart_provider.dart';
 import '../providers/product_provider.dart';
-import 'Product/post_page.dart';
+import '../widgets/bottom_nav_bar.dart';
 import 'cart_page.dart';
 import 'dashboardpage.dart';
 
@@ -115,7 +115,28 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: 1,  // History 页面对应的索引
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushNamed(context, '/home');
+              break;
+            case 1:
+              Navigator.pushNamed(context, '/search');
+              break;
+            case 2:
+              Navigator.pushNamed(context, '/post');
+              break;
+            case 3:
+              Navigator.pushNamed(context, '/history');
+              break;
+            case 4:
+              Navigator.pushNamed(context, '/profile');
+              break;
+          }
+        },
+      ),
     );
   }
 
@@ -233,7 +254,8 @@ class _HomePageState extends State<HomePage> {
   Widget _buildProductGrid() {
     return Consumer<ProductProvider>(
       builder: (context, productProvider, child) {
-        if (productProvider.isLoading && productProvider.products.isEmpty) {
+
+        if (productProvider.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -255,13 +277,12 @@ class _HomePageState extends State<HomePage> {
           return nameMatch && categoryMatch && notOwnedByUser && noEmpty;
         }).toList();
 
+        if (productProvider.products.isEmpty) {
+          return const Center(child: Text('⚠️ No products available.'));
+        }
+
         if (products.isEmpty) {
-          return const Center(
-            child: Text(
-              'No Product',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-          );
+          return const Center(child: Text('🔍 No matching products.'));
         }
 
         return RefreshIndicator(
@@ -417,103 +438,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildBottomNavigationBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey,
-            spreadRadius: 1,
-            blurRadius: 5,
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(Icons.home, 'Home',false),
-            _buildNavItem(Icons.search, 'Search', true),
-            _buildAddButton(),
-            _buildNavItem(Icons.history, 'History', false),
-            _buildNavItem(Icons.person, 'Profile', false,),
 
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
-    return Builder(
-      builder: (context) => GestureDetector(
-        onTap: () {
-          switch (label) {
-            case 'Home':
-              Navigator.pushNamed(context, '/home');
-              break;
-            case 'Search':
-              Navigator.pushNamed(context, '/search');
-              break;
-            case 'History':
-              Navigator.pushNamed(context, '/history');
-              break;
-            case 'Profile':
-              Navigator.pushNamed(context, '/profile');
-              break;
-          }
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.blue : Colors.grey,
-            ),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.blue : Colors.grey,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAddButton() {
-    return InkWell(
-      onTap: () {
-        Navigator.pushNamed(context, '/post');
-      },
-      child: Container(
-        height: 40,
-        width: 40,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: [Colors.cyanAccent, Colors.green[400]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.green,
-              spreadRadius: 1,
-              blurRadius: 6,
-            ),
-          ],
-        ),
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
-          size: 30,
-        ),
-      ),
-    );
-  }
 }

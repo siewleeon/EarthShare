@@ -9,8 +9,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/bottom_nav_bar.dart';
 
-import 'Product/post_page.dart';
-
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
 
@@ -96,19 +94,19 @@ class HistoryPage extends StatelessWidget {
         onTap: (index) {
           switch (index) {
             case 0:
-              Navigator.pushReplacementNamed(context, '/home');
+              Navigator.pushNamed(context, '/home');
               break;
             case 1:
-              Navigator.pushReplacementNamed(context, '/search');
+              Navigator.pushNamed(context, '/search');
               break;
             case 2:
-              Navigator.pushReplacementNamed(context, '/post');
+              Navigator.pushNamed(context, '/post');
               break;
             case 3:
             // 已经在 History 页面，不需要操作
               break;
             case 4:
-              Navigator.pushReplacementNamed(context, '/profile');
+              Navigator.pushNamed(context, '/profile');
               break;
           }
         },
@@ -305,6 +303,7 @@ class HistoryPage extends StatelessWidget {
                       ],
                     ),
                   ),
+
                 ],
               ),
             );
@@ -314,104 +313,5 @@ class HistoryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomNavigationBar(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey,
-            spreadRadius: 1,
-            blurRadius: 5,
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(Icons.home, 'Home', false),
-            _buildNavItem(Icons.search, 'Search', false),
-            _buildAddButton(context),
-            _buildNavItem(Icons.history, 'History', true),
-            _buildNavItem(Icons.person, 'Profile',false),
-
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
-    return Builder(
-      builder: (context) => GestureDetector(
-        onTap: () {
-          switch (label) {
-            case 'Home':
-              Navigator.pushNamed(context, '/home');
-              break;
-            case 'Search':
-              Navigator.pushNamed(context, '/search');
-              break;
-            case 'History':
-              Navigator.pushNamed(context, '/history');
-              break;
-            case 'Profile':
-              Navigator.pushNamed(context, '/profile');
-              break;
-          }
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.blue : Colors.grey,
-            ),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.blue : Colors.grey,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAddButton(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.pushNamed(context, '/post');
-      },
-      child: Container(
-        height: 40,
-        width: 40,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: [Colors.cyanAccent, Colors.green[400]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.green,
-              spreadRadius: 1,
-              blurRadius: 6,
-            ),
-          ],
-        ),
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
-          size: 30,
-        ),
-      ),
-    );
-  }
 
 }
