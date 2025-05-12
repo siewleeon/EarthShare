@@ -8,6 +8,8 @@ import '../models/product.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'Product/post_page.dart';
+
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
 
@@ -43,6 +45,7 @@ class HistoryPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.lightGreen[100],
         elevation: 0,
         title: const Text(
@@ -295,7 +298,7 @@ class HistoryPage extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey,
             spreadRadius: 1,
             blurRadius: 5,
           ),
@@ -306,73 +309,87 @@ class HistoryPage extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(context, Icons.home, 'Home', false),
-            _buildNavItem(context, Icons.search, 'Search', false),
-            _buildAddButton(),
-            _buildNavItem(context, Icons.history, 'History', true),
-            _buildNavItem(context, Icons.person, 'Profile', false),
+            _buildNavItem(Icons.home, 'Home', false),
+            _buildNavItem(Icons.search, 'Search', false),
+            _buildAddButton(context),
+            _buildNavItem(Icons.history, 'History', true),
+            _buildNavItem(Icons.person, 'Profile',false),
+
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(BuildContext context, IconData icon, String label, bool isSelected) {
-    return GestureDetector(
-      onTap: () {
-        switch (label) {
-          case 'Home':
-            Navigator.pushReplacementNamed(context, '/home');
-            break;
-          case 'Search':
-            // TODO: 实现搜索页面导航
-            break;
-          case 'History':
-            Navigator.pushReplacementNamed(context, '/history');
-            break;
-          case 'Profile':
-            Navigator.pushReplacementNamed(context, '/profile');
-            break;
-        }
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: isSelected ? Colors.blue : Colors.grey,
-          ),
-          Text(
-            label,
-            style: TextStyle(
+  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
+    return Builder(
+      builder: (context) => GestureDetector(
+        onTap: () {
+          switch (label) {
+            case 'Home':
+              Navigator.pushNamed(context, '/home');
+              break;
+            case 'Search':
+              Navigator.pushNamed(context, '/search');
+              break;
+            case 'History':
+              Navigator.pushNamed(context, '/history');
+              break;
+            case 'Profile':
+              Navigator.pushNamed(context, '/profile');
+              break;
+          }
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
               color: isSelected ? Colors.blue : Colors.grey,
-              fontSize: 12,
             ),
-          ),
-        ],
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.blue : Colors.grey,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildAddButton() {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: Colors.blue,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 5,
+  Widget _buildAddButton(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        Navigator.pushNamed(context, '/post');
+      },
+      child: Container(
+        height: 40,
+        width: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: [Colors.cyanAccent, Colors.green[400]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-        ],
-      ),
-      child: const Icon(
-        Icons.add,
-        color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.green,
+              spreadRadius: 1,
+              blurRadius: 6,
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+          size: 30,
+        ),
       ),
     );
   }
+
 }

@@ -64,7 +64,7 @@ class _HomePageState extends State<HomePage> {
           Stack(
             children: [
               IconButton(
-                icon: const Icon(Icons.shopping_cart, color: Colors.white),
+                icon: const Icon(Icons.shopping_cart, color: Colors.black),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -197,7 +197,7 @@ class _HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.circular(15),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.2),
+                            color: Colors.grey,
                             spreadRadius: 1,
                             blurRadius: 3,
                           ),
@@ -423,83 +423,96 @@ class _HomePageState extends State<HomePage> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey,
             spreadRadius: 1,
             blurRadius: 5,
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(Icons.home, 'Home', true),
-          _buildNavItem(Icons.shopping_cart, 'Cart', false),
-          _buildAddButton(),
-          _buildNavItem(Icons.history, 'History', false),
-          _buildNavItem(Icons.person, 'Profile', false),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavItem(Icons.home, 'Home',false),
+            _buildNavItem(Icons.search, 'Search', true),
+            _buildAddButton(),
+            _buildNavItem(Icons.history, 'History', false),
+            _buildNavItem(Icons.person, 'Profile', false,),
+
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildNavItem(IconData icon, String label, bool isSelected) {
-    return GestureDetector(
-      onTap: () {
-        switch (label) {
-          case 'Home':
-            Navigator.pushReplacementNamed(context, '/home');
-            break;
-          case 'Cart':
-            Navigator.pushReplacementNamed(context, '/test');
-            break;
-          case 'History':
-            Navigator.pushReplacementNamed(context, '/history');
-            break;
-          case 'Profile':
-            Navigator.pushReplacementNamed(context, '/profile');
-            break;
-        }
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: isSelected ? Colors.lightGreen : Colors.grey),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Colors.lightGreen : Colors.grey,
-              fontSize: 12,
+    return Builder(
+      builder: (context) => GestureDetector(
+        onTap: () {
+          switch (label) {
+            case 'Home':
+              Navigator.pushNamed(context, '/home');
+              break;
+            case 'Search':
+              Navigator.pushNamed(context, '/search');
+              break;
+            case 'History':
+              Navigator.pushNamed(context, '/history');
+              break;
+            case 'Profile':
+              Navigator.pushNamed(context, '/profile');
+              break;
+          }
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? Colors.blue : Colors.grey,
             ),
-          ),
-        ],
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.blue : Colors.grey,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildAddButton() {
-    return GestureDetector(
+    return InkWell(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const PostPage()),
-        );
+        Navigator.pushNamed(context, '/post');
       },
       child: Container(
-        width: 44,
-        height: 44,
+        height: 40,
+        width: 40,
         decoration: BoxDecoration(
-          color: Colors.lightGreen,
           shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: [Colors.cyanAccent, Colors.green[400]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.lightGreen.withOpacity(0.3),
-              spreadRadius: 2,
-              blurRadius: 5,
+              color: Colors.green,
+              spreadRadius: 1,
+              blurRadius: 6,
             ),
           ],
         ),
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+          size: 30,
+        ),
       ),
     );
   }

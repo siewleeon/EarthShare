@@ -4,6 +4,7 @@ import 'package:second_hand_shop/accountSetting.dart';
 import 'package:second_hand_shop/pages/Product/YourStoragePage.dart';
 import 'package:second_hand_shop/pages/Product/post_page.dart';
 import 'package:second_hand_shop/pages/contactUs_page.dart';
+import 'package:second_hand_shop/pages/history_page.dart';
 import 'package:second_hand_shop/pages/points_page.dart';
 import './edit_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -86,12 +87,11 @@ class _ProfilePageState extends State<ProfilePage> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Stack(
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/profile_background.png',
+              'assets/images/default_background.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -104,7 +104,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     buildTopSection(),
-
                     // Points section
                     buildCardSection("My Points", [
                       buildFeatureButton(
@@ -152,7 +151,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         label: "History",
                         icon: Icons.lock_clock,
                         iconBgColor: Colors.grey,
-                        // 可以加跳转逻辑
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => HistoryPage(),
+                              ),
+                            );
+                          },
                       ),
                     ]),
 
@@ -185,19 +191,29 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget buildTopSection() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 40, 20, 15),
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return SizedBox(
+      height: 200,
       child: Stack(
         children: [
-          // Top content
+          // 背景图
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/profile_banner.png',
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          // 上层内容（头像、用户名、ID、编辑按钮）
           Padding(
-            padding: const EdgeInsets.only(top: 20),
+            padding: const EdgeInsets.fromLTRB(20, 40, 20, 15),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Avatar
                 CircleAvatar(
-                  radius: 48,
+                  radius: screenWidth * 0.15,
                   backgroundImage: NetworkImage(avatarUrl),
                 ),
                 const SizedBox(width: 15),
@@ -241,10 +257,10 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
 
-          // Settings icon at top-left
+          // 设置按钮（最上层）
           Positioned(
-            top: 0,
-            right: 0,
+            top: 10,
+            right: 10,
             child: IconButton(
               icon: const Icon(Icons.settings, color: Colors.black54),
               onPressed: _navigateToSettingPage,
@@ -344,11 +360,12 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(Icons.home, 'Home',false),
-            _buildNavItem(Icons.shopping_cart, 'Cart', false),
+            _buildNavItem(Icons.home, 'Home', false),
+            _buildNavItem(Icons.search, 'Search', false),
             _buildAddButton(),
             _buildNavItem(Icons.history, 'History', false),
             _buildNavItem(Icons.person, 'Profile', true),
+
           ],
         ),
       ),
@@ -361,16 +378,16 @@ class _ProfilePageState extends State<ProfilePage> {
         onTap: () {
           switch (label) {
             case 'Home':
-              Navigator.pushReplacementNamed(context, '/home');
+              Navigator.pushNamed(context, '/home');
               break;
-            case 'Cart':
-              Navigator.pushReplacementNamed(context, '/test');
+            case 'Search':
+              Navigator.pushNamed(context, '/search');
               break;
             case 'History':
-              Navigator.pushReplacementNamed(context, '/history');
+              Navigator.pushNamed(context, '/history');
               break;
             case 'Profile':
-              Navigator.pushReplacementNamed(context, '/profile');
+              Navigator.pushNamed(context, '/profile');
               break;
           }
         },
@@ -395,28 +412,33 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildAddButton() {
-    return GestureDetector(
+    return InkWell(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const PostPage()),
-        );
+        Navigator.pushNamed(context, '/post');
       },
       child: Container(
-        width: 44,
-        height: 44,
+        height: 40,
+        width: 40,
         decoration: BoxDecoration(
-          color: Colors.lightGreen,
           shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: [Colors.cyanAccent, Colors.green[400]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.lightGreen.withOpacity(0.3),
-              spreadRadius: 2,
-              blurRadius: 5,
+              color: Colors.green,
+              spreadRadius: 1,
+              blurRadius: 6,
             ),
           ],
         ),
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+          size: 30,
+        ),
       ),
     );
   }

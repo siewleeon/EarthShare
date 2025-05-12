@@ -20,13 +20,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController nameController;
   late TextEditingController phoneController;
   late TextEditingController emailController;
+  late TextEditingController currentPasswordController;
+  late TextEditingController newPasswordController;
+
   File? _selectedImage;
   String avatarUrl = '';
   String sampleAvatarUrl =
       'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
-  late TextEditingController currentPasswordController;
-  late TextEditingController newPasswordController;
-
+  bool _isUploading = false;
+  bool _isChangingPassword = false;
+  bool _isLoading = true;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -65,6 +69,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
         return;
       }
 
+      setState(() => _isUploading = true);
+
       final ref = FirebaseStorage.instance
           .ref()
           .child('user_images')
@@ -84,28 +90,49 @@ class _EditProfilePageState extends State<EditProfilePage> {
     } catch (e) {
       print('Upload failed: $e');
       rethrow;
+    } finally {
+      setState(() => _isUploading = false);
     }
   }
 
   void _loadUserProfile() async {
-    DocumentSnapshot doc = await FirebaseFirestore.instance
-        .collection('Users')
-        .doc(widget.userUid)
-        .get();
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(widget.userUid)
+          .get();
 
-    if (doc.exists) {
-      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-      setState(() {
-        nameController.text = data['name'] ?? '';
-        phoneController.text = data['phone'] ?? '';
-        emailController.text = data['email'] ?? '';
-        avatarUrl = data['profile_Picture'] ?? '';
+      if (doc.exists) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        setState(() {
+          nameController.text = data['name'] ?? '';
+          phoneController.text = data['phone'] ?? '';
+          emailController.text = data['email'] ?? '';
+          avatarUrl = data['profile_Picture'] ?? '';
+          _isLoading = false;
 
-      });
+        });
+      }else {
+        setState(() => _isLoading = false);}
+    } catch (e) {
+      print('Failed to load user profile: $e');
     }
   }
 
   void _saveProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final isUnique = await _isEmailUnique(emailController.text.trim());
+    if (!isUnique) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('❌ This email is already registered to another account.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
     // 显示 loading dialog
     showDialog(
       context: context,
@@ -114,12 +141,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
 
     try {
-      // 上传头像（如果有选择）
       if (_selectedImage != null) {
         await _uploadImage();
       }
 
-      // 更新用户信息
       await FirebaseFirestore.instance
           .collection('Users')
           .doc(widget.userUid)
@@ -130,34 +155,39 @@ class _EditProfilePageState extends State<EditProfilePage> {
         'profile_Picture': avatarUrl,
       });
 
-      // 关闭 loading dialog
       Navigator.pop(context);
 
-      // 显示成功提示
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("✅ Profile updated successfully!"),
           backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
         ),
       );
 
-      // 返回上一页，并标记为已保存成功
       Navigator.pop(context, true);
-
     } catch (e) {
-      // 关闭 loading dialog
       Navigator.pop(context);
-
-      // 显示失败提示
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("❌ Failed to save profile: ${e.toString()}"),
           backgroundColor: Colors.red,
-          duration: Duration(seconds: 3),
         ),
       );
     }
+  }
+
+  Future<bool> _isEmailUnique(String email) async {
+    final query = await FirebaseFirestore.instance
+        .collection('Users')
+        .where('email', isEqualTo: email)
+        .get();
+
+    for (var doc in query.docs) {
+      if (doc.id != widget.userUid) {
+        return false; // 有其他用户用了这个 email
+      }
+    }
+    return true;
   }
 
   String _checkPasswordStrength(String password) {
@@ -165,7 +195,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     bool hasUpper = password.contains(RegExp(r'[A-Z]'));
     bool hasLower = password.contains(RegExp(r'[a-z]'));
     bool hasDigit = password.contains(RegExp(r'[0-9]'));
-    bool hasSpecial = password.contains(RegExp(r'[!@#\$&*~]'));
+    bool hasSpecial = password.contains(RegExp(r'[!@#\\$&*~]'));
 
     int strength = [hasUpper, hasLower, hasDigit, hasSpecial].where((e) => e).length;
     switch (strength) {
@@ -189,95 +219,93 @@ class _EditProfilePageState extends State<EditProfilePage> {
     };
   }
 
+  Future<void> _showLoadingDialog(String message) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        content: Row(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(width: 20),
+            Expanded(child: Text(message)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('❌ $msg'), backgroundColor: Colors.red),
+    );
+  }
+
   Future<void> _handlePasswordChange(String current, String newPass, String confirm) async {
-    // Check if the new password matches the confirmation password
-    if (newPass != confirm) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('New passwords do not match')),
-      );
-      return;
-    }
-
-    // Check if the old and new passwords are the same
-    if (current == newPass) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('New password cannot be the same as the current password')),
-      );
-      return;
-    }
-
-    // Check the strength of the new password
-    String passwordStrength = _checkPasswordStrength(newPass);
-    if (passwordStrength == "Too short" || passwordStrength == "Very weak") {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('The new password is too weak, please choose a stronger password')),
-      );
-      return;
-    }
+    if (_isChangingPassword) return;
+    setState(() => _isChangingPassword = true);
 
     try {
-      // Show a loading indicator to inform the user that the process is ongoing
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
-      );
-
-      // Get the current user
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        throw 'No user signed in';
+      if (newPass != confirm) {
+        _showError('New passwords do not match');
+        return;
       }
 
-      // Re-authenticate the user using the current password
+      if (current == newPass) {
+        _showError('New password cannot be the same as the current password');
+        return;
+      }
+
+      String strength = _checkPasswordStrength(newPass);
+      if (strength == "Too short" || strength == "Very weak") {
+        _showError('The new password is too weak, please choose a stronger password');
+        return;
+      }
+
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        _showError('No user signed in');
+        return;
+      }
+
+      // 显示加载框
+      await _showLoadingDialog('Updating password...');
+
+      // 重新验证身份
       final cred = EmailAuthProvider.credential(email: user.email!, password: current);
       await user.reauthenticateWithCredential(cred);
 
-      // Update the user's password
       await user.updatePassword(newPass);
 
-      // Close the loading indicator
       Navigator.pop(context);
-
-      // Show a success message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Password updated successfully, logging out...')),
       );
 
-      // Show a loading indicator while logging out
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
-      );
-
-      // Sign the user out
+      await _showLoadingDialog('Logging out...');
       await FirebaseAuth.instance.signOut();
 
-      // Close the loading indicator and navigate to the login page
       Navigator.pop(context);
       navigatorKey.currentState?.pushNamedAndRemoveUntil('/emailLogin', (route) => false);
 
-    } catch (e) {
-      // Catch any errors and close the loading indicator
-      Navigator.pop(context);
-
-      String errorMsg = 'Failed to update password';
-      if (e is FirebaseAuthException) {
-        // Handle different FirebaseAuthException error codes
-        if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
-          errorMsg = 'The current password is incorrect';
-        } else if (e.code == 'weak-password') {
-          errorMsg = 'The new password is too weak, please choose a stronger password';
-        } else {
-          errorMsg = 'Error: ${e.message}';
-        }
-      } else if (e is String) {
-        errorMsg = e; // Handle custom error messages, such as no user signed in
+    } on FirebaseAuthException catch (e) {
+      Navigator.pop(context); // 关闭加载框
+      switch (e.code) {
+        case 'wrong-password':
+        case 'invalid-credential':
+          _showError('The current password is incorrect');
+          break;
+        case 'weak-password':
+          _showError('The new password is too weak');
+          break;
+        default:
+          _showError('Firebase error: ${e.message}');
       }
-
-      // Show the detailed error message
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMsg)));
+    } catch (e) {
+      Navigator.pop(context); // 关闭加载框
+      _showError(e.toString());
+    } finally {
+      setState(() => _isChangingPassword = false);
     }
   }
 
@@ -353,67 +381,188 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
+  String? validateName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter your full name';
+    }
+    return null;
+  }
+
+  String? validatePhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter your phone number';
+    }
+    final phoneRegExp = RegExp(r'^\+?[0-9]{7,15}$');
+    if (!phoneRegExp.hasMatch(value)) {
+      return 'Enter a valid phone number';
+    }
+    return null;
+  }
+
+  String? validateEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter your email';
+    }
+    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegExp.hasMatch(value)) {
+      return 'Enter a valid email address';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit Profile')),
+      appBar: AppBar(
+        title: const Text('Edit Profile'),
+        backgroundColor: Colors.deepPurple, // 设置AppBar颜色
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                GestureDetector(
-                  onTap: _pickImage,
-                  child: CircleAvatar(
-                    radius: screenWidth * 0.15,
-                    backgroundImage: _selectedImage != null
-                        ? FileImage(_selectedImage!)
-                        : (avatarUrl.isNotEmpty
-                        ? NetworkImage(avatarUrl) as ImageProvider
-                        : NetworkImage(sampleAvatarUrl)),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: CircleAvatar(
+                      radius: screenWidth * 0.2, // 头像更大一点
+                      backgroundImage: _selectedImage != null
+                          ? FileImage(_selectedImage!)
+                          : (avatarUrl.isNotEmpty
+                          ? NetworkImage(avatarUrl) as ImageProvider
+                          : NetworkImage(sampleAvatarUrl)),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                const Text("Tap to change profile picture"),
+                  const SizedBox(height: 12),
+                  const Text(
+                    "Tap to change profile picture",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.deepPurple,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Name input
+                  TextFormField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Name',
+                      labelStyle: TextStyle(color: Colors.deepPurple),
+                      hintText: 'Enter your name',
+                      hintStyle: TextStyle(color: Colors.grey[400]),
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.deepPurple, width: 2),
+                      ),
+                    ),
+                    validator: validateName,
+                  ),
+                  const SizedBox(height: 16),
 
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Name'),
-                ),
-                TextField(
-                  controller: phoneController,
-                  decoration: const InputDecoration(labelText: 'Phone'),
-                  keyboardType: TextInputType.phone,
-                ),
-                TextField(
-                  controller: emailController,
-                  decoration: const InputDecoration(labelText: 'Email'),
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 20),
+                  // Phone input
+                  TextFormField(
+                    controller: phoneController,
+                    decoration: InputDecoration(
+                      labelText: 'Phone',
+                      labelStyle: TextStyle(color: Colors.deepPurple),
+                      hintText: 'Enter your phone number',
+                      hintStyle: TextStyle(color: Colors.grey[400]),
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.deepPurple, width: 2),
+                      ),
+                    ),
+                    keyboardType: TextInputType.phone,
+                    validator: validatePhone,
+                  ),
+                  const SizedBox(height: 16),
 
-                // 修改密码按钮
-                ElevatedButton(
-                  onPressed: _changePassword,
-                  child: const Text('Change Password'),
-                ),
-                const SizedBox(height: 20),
+                  // Email input
+                  TextFormField(
+                    controller: emailController,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      labelStyle: TextStyle(color: Colors.deepPurple),
+                      hintText: 'Enter your email',
+                      hintStyle: TextStyle(color: Colors.grey[400]),
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.deepPurple, width: 2),
+                      ),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    validator: validateEmail,
+                  ),
+                  const SizedBox(height: 24),
 
-                ElevatedButton(
-                  onPressed: _saveProfile,
-                  child: const Text('Save'),
-                ),
-              ],
+                  // Change Password button
+                  ElevatedButton(
+                    onPressed: _changePassword,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple, // 按钮颜色
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Change Password',
+
+                      style: TextStyle(fontSize: 16,color: Colors.white),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Save Profile button
+                  ElevatedButton(
+                    onPressed: _saveProfile,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple, // 按钮颜色
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Save',
+                      style: TextStyle(fontSize: 16,color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
-
 
   Widget _buildPasswordField({
     required TextEditingController controller,
@@ -428,6 +577,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       onChanged: onChanged,
       decoration: InputDecoration(
         labelText: label,
+        border: const OutlineInputBorder(),
         suffixIcon: IconButton(
           icon: Icon(isVisible ? Icons.visibility : Icons.visibility_off),
           onPressed: onToggle,
@@ -435,5 +585,4 @@ class _EditProfilePageState extends State<EditProfilePage> {
       ),
     );
   }
-
 }
