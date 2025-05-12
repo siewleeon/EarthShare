@@ -59,20 +59,26 @@ class MainApp extends StatelessWidget {
         initialRoute: '/mainLogin',
         routes: {
           '/mainLogin': (context) => const WelcomeScreen(),
-          '/home': (context) => const HomePage(),
-          '/history': (context) => const HistoryPage(),
-          '/post': (context) => const PostPage(),
-          '/profile': (context) => const ProfilePage(),
+
+          //login navigator routes
           '/register': (context) => const RegisterPage(),
           '/emailLogin': (context) => const EmailLoginPage(),
           '/phoneLogin': (context) => PhoneLoginPage(),
           '/adminLogin': (context) => const AdminLoginPage(),
+
+          //user navigator bar routes
+          '/home': (context) => DashboardPage(),
+          '/search': (context) => const HomePage(),
+          '/history': (context) => const HistoryPage(),
+          '/profile': (context) => const ProfilePage(),
+          '/post': (context) => const PostPage(),
+
+          //admin navigator bar routes
           '/adminPage': (context) => const AdminProfile(),
           '/manageVoucherPage': (context) => const ManageVoucherList(),
           '/manageUserPage': (context) => const ManageUserPage(),
-
+          '/manageProductPage': (context) => const ManageProductsList(),
           '/salesReportPage': (context) => const SalesReport(),
-          '/test': (context) => DashboardPage(),
         },
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),

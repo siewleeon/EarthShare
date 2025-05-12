@@ -18,6 +18,8 @@ class _RegisterPageState extends State<RegisterPage> {
   late TextEditingController passwordController;
   late TextEditingController confirmPasswordController;
   String avatarUrl = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+  bool isLoading = false;
+  String _currentStrength = "";
 
   @override
   void initState() {
@@ -27,6 +29,11 @@ class _RegisterPageState extends State<RegisterPage> {
     emailController = TextEditingController();
     passwordController = TextEditingController();
     confirmPasswordController = TextEditingController();
+    passwordController.addListener(() {
+      setState(() {
+        _currentStrength = checkPasswordStrength(passwordController.text);
+      });
+    });
   }
 
   Future<String> _generateNewUserId() async {
@@ -67,12 +74,17 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Color getStrengthColor(String strength) {
-    return switch (strength) {
-      "Strong" => Colors.green,
-      "Medium" => Colors.orange,
-      "Weak" => Colors.redAccent,
-      _ => Colors.red
-    };
+    switch (strength) {
+      case 'Strong':
+        return Colors.green;
+      case 'Medium':
+        return Colors.orange;
+      case 'Weak':
+      case 'Very weak':
+        return Colors.red;
+      default:
+        return Colors.black;
+    }
   }
 
   String? validateName(String? value) {
@@ -116,6 +128,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _handleRegister() async {
     if (_formKey.currentState!.validate() && agreeToTerms) {
+      setState(() {
+        isLoading = true;
+      });
+
       try {
         final credential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(
@@ -149,6 +165,10 @@ class _RegisterPageState extends State<RegisterPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Registration failed: $e")),
         );
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
       }
     } else if (!agreeToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -272,6 +292,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   ),
                                 ),
                               )
+
                             ],
                           ),
                         ),
@@ -282,8 +303,16 @@ class _RegisterPageState extends State<RegisterPage> {
               );
             },
           ),
+          if (isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+            ),
 
         ],
+
       ),
     );
   }
@@ -322,6 +351,7 @@ class _RegisterPageState extends State<RegisterPage> {
           Text(label, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
           const SizedBox(height: 4),
           TextFormField(
+            controller: passwordController,
             obscureText: true,
             decoration: InputDecoration(
               filled: true,
@@ -331,21 +361,30 @@ class _RegisterPageState extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            controller: passwordController,
+            onChanged: (value) {
+              setState(() {
+                _currentStrength = checkPasswordStrength(value);
+              });
+            },
             validator: (value) {
-              String passwordStrength = checkPasswordStrength(value ?? '');
+              String strength = checkPasswordStrength(value ?? '');
               if (value == null || value.isEmpty) {
                 return 'Please enter a password';
-              } else if (passwordStrength == 'Too short') {
+              } else if (strength == 'Too short') {
                 return 'Password is too short';
+              } else if (strength == 'Very weak' || strength == 'Weak') {
+                return 'Password strength should be at least Medium';
               }
               return null;
             },
           ),
           const SizedBox(height: 8),
           Text(
-            checkPasswordStrength(passwordController.text),
-            style: TextStyle(color: getStrengthColor(checkPasswordStrength(passwordController.text))),
+            'Strength: $_currentStrength',
+            style: TextStyle(
+              color: getStrengthColor(_currentStrength),
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),

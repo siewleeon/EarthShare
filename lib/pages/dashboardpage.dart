@@ -2,9 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:second_hand_shop/pages/cart_page.dart';
 import 'package:second_hand_shop/pages/product_detail_page.dart';
 import 'dart:math';
+import '../providers/cart_provider.dart';
 import '../providers/product_provider.dart';
+import 'Product/post_page.dart';
 import 'home_page.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -26,7 +29,8 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
     _controller = AnimationController(
       duration: const Duration(seconds: 20),
       vsync: this,
-    )..repeat();
+    )
+      ..repeat();
   }
 
   void _loadUser() async {
@@ -40,7 +44,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
     if (doc.exists) {
       Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
       setState(() {
-        userId=data['userId'] ?? '';
+        userId = data['userId'] ?? '';
       });
     }
   }
@@ -69,14 +73,14 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: const Color(0xCCFF66).withOpacity(0.7),
+                  color: const Color(0xCCFF66),
                   borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(20),
                     bottomRight: Radius.circular(20),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.3),
+                      color: Colors.grey,
                       spreadRadius: 1,
                       blurRadius: 5,
                       offset: const Offset(0, 2),
@@ -94,7 +98,8 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                           onTap: () {
                             Navigator.pushReplacement(
                               context,
-                              MaterialPageRoute(builder: (context) => const DashboardPage()),
+                              MaterialPageRoute(
+                                  builder: (context) => const DashboardPage()),
                             );
                           },
                           child: Image.asset(
@@ -113,32 +118,41 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                         IconButton(
                           icon: const Icon(Icons.shopping_cart, color: Colors.black),
                           onPressed: () {
-                            Navigator.pushNamed(context, '/cart');
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const CartPage()),
+                            );
                           },
                         ),
-                        Positioned(
-                          right: 8,
-                          top: 8,
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 14,
-                              minHeight: 14,
-                            ),
-                            child: const Center(
-                              child: Text(
-                                '1',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 8,
+                        Consumer<CartProvider>(
+                          builder: (context, cart, child) {
+                            if (cart.itemCount > 0) {
+                              return Positioned(
+                                right: 6,
+                                top: 6,
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 20,
+                                    minHeight: 20,
+                                  ),
+                                  child: Text(
+                                    '${cart.itemCount}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
                         ),
                       ],
                     ),
@@ -167,7 +181,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                                 color: Colors.white,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
+                                    color: Colors.grey,
                                     blurRadius: 6,
                                     spreadRadius: 2,
                                     offset: const Offset(0, 2),
@@ -193,8 +207,10 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                                             height: 500,
                                             fit: BoxFit.cover,
                                             alignment: Alignment.center,
-                                            errorBuilder: (context, error, stackTrace) {
-                                              return Container(color: Colors.green.withOpacity(0.2));
+                                            errorBuilder: (context, error,
+                                                stackTrace) {
+                                              return Container(
+                                                  color: Colors.green);
                                             },
                                           ),
                                         ),
@@ -208,19 +224,22 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                                     onTap: () {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) => const HomePage()),
+                                        MaterialPageRoute(builder: (
+                                            context) => const HomePage()),
                                       );
                                     },
                                     child: Image.asset(
                                       'assets/images/newUSER.png',
                                       fit: BoxFit.contain,
                                       width: double.infinity,
-                                      errorBuilder: (context, error, stackTrace) {
+                                      errorBuilder: (context, error,
+                                          stackTrace) {
                                         return Container(
                                           padding: const EdgeInsets.all(16),
                                           decoration: BoxDecoration(
                                             color: Colors.green[900],
-                                            borderRadius: BorderRadius.circular(16),
+                                            borderRadius: BorderRadius.circular(
+                                                16),
                                           ),
                                           child: const Center(
                                             child: Text(
@@ -246,7 +265,8 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                       // ✅ Categories 標題列（放在外面）
                       // 🔼 向上移動 Categories 區塊
                       Transform.translate(
-                        offset: const Offset(0, -12), // 可以微調成 -8、-10、-16 視覺最舒服為準
+                        offset: const Offset(0, -12),
+                        // 可以微調成 -8、-10、-16 視覺最舒服為準
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 13.0),
                           child: Row(
@@ -266,7 +286,9 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const HomePage(), /// 替換成你的分類頁 class
+                                      builder: (context) => const HomePage(),
+
+                                      /// 替換成你的分類頁 class
                                     ),
                                   );
                                 },
@@ -284,7 +306,8 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                           child: Row(
                             children: [
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0),
                                 child: SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   child: Row(
@@ -292,69 +315,107 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                                       AnimatedCategoryItem(
                                         delay: const Duration(milliseconds: 0),
                                         child: Padding(
-                                          padding: const EdgeInsets.only(right: 16.0),
-                                          child: _buildCategoryItem(context, Icons.checkroom, 'Fashion', Colors.black),
+                                          padding: const EdgeInsets.only(
+                                              right: 16.0),
+                                          child: _buildCategoryItem(
+                                              context, Icons.checkroom,
+                                              'Fashion', Colors.black),
                                         ),
                                       ),
                                       AnimatedCategoryItem(
-                                        delay: const Duration(milliseconds: 100),
+                                        delay: const Duration(
+                                            milliseconds: 100),
                                         child: Padding(
-                                          padding: const EdgeInsets.only(right: 16.0),
-                                          child: _buildCategoryItem(context, Icons.computer, 'Electronic', Colors.black),
+                                          padding: const EdgeInsets.only(
+                                              right: 16.0),
+                                          child: _buildCategoryItem(
+                                              context, Icons.computer,
+                                              'Electronic', Colors.black),
                                         ),
                                       ),
                                       AnimatedCategoryItem(
-                                        delay: const Duration(milliseconds: 200),
+                                        delay: const Duration(
+                                            milliseconds: 200),
                                         child: Padding(
-                                          padding: const EdgeInsets.only(right: 16.0),
-                                          child: _buildCategoryItem(context, Icons.directions_run, 'Shoes', Colors.black),
+                                          padding: const EdgeInsets.only(
+                                              right: 16.0),
+                                          child: _buildCategoryItem(
+                                              context, Icons.directions_run,
+                                              'Shoes', Colors.black),
                                         ),
                                       ),
                                       AnimatedCategoryItem(
-                                        delay: const Duration(milliseconds: 300),
+                                        delay: const Duration(
+                                            milliseconds: 300),
                                         child: Padding(
-                                          padding: const EdgeInsets.only(right: 16.0),
-                                          child: _buildCategoryItem(context, Icons.chair, 'Furniture', Colors.black),
+                                          padding: const EdgeInsets.only(
+                                              right: 16.0),
+                                          child: _buildCategoryItem(
+                                              context, Icons.chair, 'Furniture',
+                                              Colors.black),
                                         ),
                                       ),
                                       AnimatedCategoryItem(
-                                        delay: const Duration(milliseconds: 400),
+                                        delay: const Duration(
+                                            milliseconds: 400),
                                         child: Padding(
-                                          padding: const EdgeInsets.only(right: 16.0),
-                                          child: _buildCategoryItem(context, Icons.brush, 'Beauty', Colors.black),
+                                          padding: const EdgeInsets.only(
+                                              right: 16.0),
+                                          child: _buildCategoryItem(
+                                              context, Icons.brush, 'Beauty',
+                                              Colors.black),
                                         ),
                                       ),
                                       AnimatedCategoryItem(
-                                        delay: const Duration(milliseconds: 500),
+                                        delay: const Duration(
+                                            milliseconds: 500),
                                         child: Padding(
-                                          padding: const EdgeInsets.only(right: 16.0),
-                                          child: _buildCategoryItem(context, Icons.toys, 'Toy', Colors.black),
+                                          padding: const EdgeInsets.only(
+                                              right: 16.0),
+                                          child: _buildCategoryItem(
+                                              context, Icons.toys, 'Toy',
+                                              Colors.black),
                                         ),
                                       ),
                                       AnimatedCategoryItem(
-                                        delay: const Duration(milliseconds: 600),
+                                        delay: const Duration(
+                                            milliseconds: 600),
                                         child: Padding(
-                                          padding: const EdgeInsets.only(right: 16.0),
-                                          child: _buildCategoryItem(context, Icons.sports_esports, 'Game', Colors.black),
+                                          padding: const EdgeInsets.only(
+                                              right: 16.0),
+                                          child: _buildCategoryItem(
+                                              context, Icons.sports_esports,
+                                              'Game', Colors.black),
                                         ),
                                       ),
                                       AnimatedCategoryItem(
-                                        delay: const Duration(milliseconds: 700),
+                                        delay: const Duration(
+                                            milliseconds: 700),
                                         child: Padding(
-                                          padding: const EdgeInsets.only(right: 16.0),
-                                          child: _buildCategoryItem(context, Icons.health_and_safety, 'Health', Colors.black),
+                                          padding: const EdgeInsets.only(
+                                              right: 16.0),
+                                          child: _buildCategoryItem(
+                                              context, Icons.health_and_safety,
+                                              'Health', Colors.black),
                                         ),
                                       ),
                                       AnimatedCategoryItem(
-                                        delay: const Duration(milliseconds: 800),
+                                        delay: const Duration(
+                                            milliseconds: 800),
                                         child: Padding(
-                                          padding: const EdgeInsets.only(right: 16.0),
-                                          child: _buildCategoryItem(context, Icons.photo_camera, 'Camera', Colors.black),
+                                          padding: const EdgeInsets.only(
+                                              right: 16.0),
+                                          child: _buildCategoryItem(
+                                              context, Icons.photo_camera,
+                                              'Camera', Colors.black),
                                         ),
                                       ),
                                       AnimatedCategoryItem(
-                                        delay: const Duration(milliseconds: 900),
-                                        child: _buildCategoryItem(context, Icons.category, 'Other', Colors.black),
+                                        delay: const Duration(
+                                            milliseconds: 900),
+                                        child: _buildCategoryItem(
+                                            context, Icons.category, 'Other',
+                                            Colors.black),
                                       ),
                                     ],
                                   ),
@@ -388,7 +449,9 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const HomePage(), /// 替換成你的分類頁 class
+                                    builder: (context) => const HomePage(),
+
+                                    /// 替換成你的分類頁 class
                                   ),
                                 );
                               },
@@ -412,11 +475,13 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                             child: Image.asset(
                               'assets/images/saveearth.png',
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                height: 150,
-                                color: Colors.green[100],
-                                child: const Center(child: Text('Save Earth Banner')),
-                              ),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                    height: 150,
+                                    color: Colors.green[100],
+                                    child: const Center(
+                                        child: Text('Save Earth Banner')),
+                                  ),
                             ),
                           ),
                         ),
@@ -439,7 +504,8 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                                     child: Image.asset(
                                       'assets/images/1.png',
                                       fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) =>
+                                      errorBuilder: (context, error,
+                                          stackTrace) =>
                                       const Icon(Icons.image_not_supported),
                                     ),
                                   ),
@@ -462,7 +528,8 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                                     child: Image.asset(
                                       'assets/images/2.png',
                                       fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) =>
+                                      errorBuilder: (context, error,
+                                          stackTrace) =>
                                       const Icon(Icons.image_not_supported),
                                     ),
                                   ),
@@ -474,8 +541,6 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                       ),
 
 
-
-
                       const SizedBox(height: 70), // Space for bottom navigation
                     ],
                   ),
@@ -485,56 +550,19 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(context),
+      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
-  Widget _buildBottomNavigationBar(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 1,
-            blurRadius: 8,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        child: BottomAppBar(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(context, Icons.home, 'Home', true, '/dashboard'),
-              _buildNavItem(context, Icons.search, 'Search', false, '/search'),
-              _buildPostButton(context),
-              _buildNavItem(context, Icons.history, 'History', false, '/history'),
-              _buildNavItem(context, Icons.person, 'Profile', false, '/profile'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCategoryItem(BuildContext context, IconData icon, String label, Color color) {
+  Widget _buildCategoryItem(BuildContext context, IconData icon, String label,
+      Color color) {
     return InkWell(
       onTap: () {
         Navigator.push(
-            context,
-            MaterialPageRoute(
+          context,
+          MaterialPageRoute(
             builder: (context) => HomePage(selectedCategory: label),
-        ),
+          ),
         );
       },
       child: Column(
@@ -547,7 +575,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
               borderRadius: BorderRadius.circular(15),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
+                  color: Colors.grey,
                   spreadRadius: 1,
                   blurRadius: 3,
                 ),
@@ -565,42 +593,82 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
     );
   }
 
-
-
-  Widget _buildNavItem(BuildContext context, IconData icon, String label, bool isSelected, String route) {
-    return InkWell(
-      onTap: () {
-        if (!isSelected) {
-          Navigator.pushReplacementNamed(context, route);
-        }
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: isSelected ? Colors.green : Colors.grey,
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: isSelected ? Colors.green : Colors.grey,
-            ),
+  Widget _buildBottomNavigationBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey,
+            spreadRadius: 1,
+            blurRadius: 5,
           ),
         ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavItem(Icons.home, 'Home', true),
+            _buildNavItem(Icons.search, 'Search', false),
+            _buildAddButton(),
+            _buildNavItem(Icons.history, 'History', false),
+            _buildNavItem(Icons.person, 'Profile', false,),
+
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildPostButton(BuildContext context) {
+  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
+    return Builder(
+      builder: (context) => GestureDetector(
+        onTap: () {
+          switch (label) {
+            case 'Home':
+              Navigator.pushNamed(context, '/home');
+              break;
+            case 'Search':
+              Navigator.pushNamed(context, '/search');
+              break;
+            case 'History':
+              Navigator.pushNamed(context, '/history');
+              break;
+            case 'Profile':
+              Navigator.pushNamed(context, '/profile');
+              break;
+          }
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? Colors.blue : Colors.grey,
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.blue : Colors.grey,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddButton() {
     return InkWell(
       onTap: () {
         Navigator.pushNamed(context, '/post');
       },
       child: Container(
-        height: 56,
-        width: 56,
+        height: 40,
+        width: 40,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: LinearGradient(
@@ -610,7 +678,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.green.withOpacity(0.3),
+              color: Colors.green,
               spreadRadius: 1,
               blurRadius: 6,
             ),
@@ -625,6 +693,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
     );
   }
 }
+
 class AnimatedSlideInFromRight extends StatefulWidget {
   final Widget child;
   final Duration duration;

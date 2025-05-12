@@ -48,6 +48,12 @@ class _EditUserPageState extends State<EditUserPage> {
 
   // 保存更改到 Firestore
   Future<void> _saveChanges() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
     String? newImageUrl;
     if (_profilePicture != null) {
       newImageUrl = await _uploadProfilePicture(_profilePicture!);
@@ -60,12 +66,13 @@ class _EditUserPageState extends State<EditUserPage> {
         'email': _emailController.text.trim(),
         'profile_Picture': newImageUrl ?? widget.user['profile_picture'],
       });
-
+      Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('User updated successfully')),
       );
       Navigator.pop(context);
     } catch (e) {
+      Navigator.pop(context);
       print("Error updating user: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to update user')),

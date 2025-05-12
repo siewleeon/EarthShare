@@ -80,11 +80,17 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
                   // Logo Image
                   Image.asset(
                     'assets/images/mobileLogin_logo.png',
-                    width: 250,
-                    height: 250,
+                    width: 200,
+                    height: 200,
                   ),
-                  const SizedBox(height: 24),
-                  TextField(
+                  const Text(
+                    "Login",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 25),                  TextField(
                     controller: phoneController,
                     decoration: _inputDecoration("Phone Number"),
                     keyboardType: TextInputType.phone,

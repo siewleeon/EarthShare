@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'mainLogin.dart';
+
 class AdminLoginPage extends StatefulWidget {
   const AdminLoginPage({super.key});
 
@@ -84,8 +86,15 @@ class _LoginPageState extends State<AdminLoginPage> {
                       width: 200,
                       height: 200,
                     ),
-                    const SizedBox(height: 32),
-
+                    const Text(
+                      "Admin Login Page",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 25),
                     // User Name
                     TextFormField(
                       controller: _userNameController,
@@ -139,15 +148,18 @@ class _LoginPageState extends State<AdminLoginPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
-                          "Use Email to Login",
-                          style: TextStyle(color: Colors.black54),
+                          "Back to User Login",
+                          style: TextStyle(color: Colors.black54,fontWeight: FontWeight.bold),
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.pop(context); // Go back to EmailLoginPage
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+                            );
                           },
                           child: const Text(
-                            'Email Login',
+                            'back',
                             style: TextStyle(
                               color: Colors.blueAccent,
                               decoration: TextDecoration.underline,

@@ -11,30 +11,7 @@ class BankAccountsPage extends StatefulWidget {
 }
 
 class _BankAccountsPageState extends State<BankAccountsPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bank Accounts'),
-        backgroundColor: Colors.green,
-      ),
-      body: _bankAccounts.isEmpty
-          ? const Center(
-              child: Text('No bank accounts added yet'),
-            )
-          : ListView.builder(
-              itemCount: _bankAccounts.length,
-              itemBuilder: (context, index) {
-                return _buildCardTile(_bankAccounts[index]);
-              },
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddCardDialog,
-        backgroundColor: Colors.green,
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
+
   final dbHelper = UserDataDatabaseHelper();
   List<Map<String, dynamic>> _bankAccounts = [];
   String userID = '';
@@ -54,6 +31,8 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
   Future<void> _initData() async {
     await _loadUserID();
     await _loadAccounts();
+    //await dbHelper.deleteOldDB(); //when table got changed
+
   }
 
   Future<void> _loadUserID() async {
@@ -209,6 +188,31 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Bank Accounts'),
+        backgroundColor: Colors.green,
+      ),
+      body: _bankAccounts.isEmpty
+          ? const Center(
+        child: Text('No bank accounts added yet'),
+      )
+          : ListView.builder(
+        itemCount: _bankAccounts.length,
+        itemBuilder: (context, index) {
+          return _buildCardTile(_bankAccounts[index]);
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddCardDialog,
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.add),
       ),
     );
   }

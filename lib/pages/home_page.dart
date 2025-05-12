@@ -8,6 +8,7 @@ import '../providers/cart_provider.dart';
 import '../providers/product_provider.dart';
 import 'Product/post_page.dart';
 import 'cart_page.dart';
+import 'dashboardpage.dart';
 
 class HomePage extends StatefulWidget {
   final String selectedCategory;
@@ -52,6 +53,8 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+
         title: Image.asset(
           'assets/images/eslogo.png',
           height: 40,
@@ -61,7 +64,7 @@ class _HomePageState extends State<HomePage> {
           Stack(
             children: [
               IconButton(
-                icon: const Icon(Icons.shopping_cart, color: Colors.white),
+                icon: const Icon(Icons.shopping_cart, color: Colors.black),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -107,7 +110,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           children: [
             _buildSearchBar(),
-            _buildCategories(),
+            _buildCategoriesScrollable(),
             Expanded(child: _buildProductGrid()),
           ],
         ),
@@ -147,36 +150,79 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildCategories() {
+// Alternative: Single-row scrollable layout with ListView
+  Widget _buildCategoriesScrollable() {
     final categories = [
-      'All', 'Shoes', 'Fashion', 'Electronic', 'Toy', 'Furniture',
-      'Beauty', 'Health', 'Game', 'Camera', 'Other'
+      {'label': 'All', 'icon': Icons.all_inclusive},
+      {'label': 'Shoes', 'icon': Icons.directions_run},
+      {'label': 'Fashion', 'icon': Icons.checkroom},
+      {'label': 'Electronic', 'icon': Icons.computer},
+      {'label': 'Toy', 'icon': Icons.toys},
+      {'label': 'Furniture', 'icon': Icons.chair},
+      {'label': 'Beauty', 'icon': Icons.brush},
+      {'label': 'Health', 'icon': Icons.health_and_safety},
+      {'label': 'Game', 'icon': Icons.sports_esports},
+      {'label': 'Camera', 'icon': Icons.photo_camera},
+      {'label': 'Other', 'icon': Icons.category},
     ];
 
     return SizedBox(
-      height: 40,
+      height: 90, // Adjusted to fit icon + text
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
         itemBuilder: (context, index) {
           final category = categories[index];
-          final isSelected = _selectedCategory == category;
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _selectedCategory = category;
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isSelected ? Colors.green[200] : Colors.grey[200],
-                foregroundColor: isSelected ? Colors.white : Colors.black87,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
+          final label = category['label'] as String;
+          final icon = category['icon'] as IconData;
+          final selected = _selectedCategory == label;
+
+          return AnimatedCategoryItem(
+            delay: Duration(milliseconds: index * 20),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    _selectedCategory = label;
+                  });
+                },
+                child: Column(
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey,
+                            spreadRadius: 1,
+                            blurRadius: 3,
+                          ),
+                        ],
+                        border: selected
+                            ? Border.all(color: Colors.lightGreen, width: 2)
+                            : null,
+                      ),
+                      child: Icon(
+                        icon,
+                        color: selected ? Colors.lightGreen : Colors.grey,
+                        size: 30,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: selected ? Colors.lightGreen : Colors.grey,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Text(category),
             ),
           );
         },
@@ -377,83 +423,96 @@ class _HomePageState extends State<HomePage> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey,
             spreadRadius: 1,
             blurRadius: 5,
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(Icons.home, 'Home', true),
-          _buildNavItem(Icons.shopping_cart, 'Cart', false),
-          _buildAddButton(),
-          _buildNavItem(Icons.history, 'History', false),
-          _buildNavItem(Icons.person, 'Profile', false),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavItem(Icons.home, 'Home',false),
+            _buildNavItem(Icons.search, 'Search', true),
+            _buildAddButton(),
+            _buildNavItem(Icons.history, 'History', false),
+            _buildNavItem(Icons.person, 'Profile', false,),
+
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildNavItem(IconData icon, String label, bool isSelected) {
-    return GestureDetector(
-      onTap: () {
-        switch (label) {
-          case 'Home':
-            Navigator.pushReplacementNamed(context, '/home');
-            break;
-          case 'Cart':
-            Navigator.pushReplacementNamed(context, '/test');
-            break;
-          case 'History':
-            Navigator.pushReplacementNamed(context, '/history');
-            break;
-          case 'Profile':
-            Navigator.pushReplacementNamed(context, '/profile');
-            break;
-        }
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: isSelected ? Colors.lightGreen : Colors.grey),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Colors.lightGreen : Colors.grey,
-              fontSize: 12,
+    return Builder(
+      builder: (context) => GestureDetector(
+        onTap: () {
+          switch (label) {
+            case 'Home':
+              Navigator.pushNamed(context, '/home');
+              break;
+            case 'Search':
+              Navigator.pushNamed(context, '/search');
+              break;
+            case 'History':
+              Navigator.pushNamed(context, '/history');
+              break;
+            case 'Profile':
+              Navigator.pushNamed(context, '/profile');
+              break;
+          }
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? Colors.blue : Colors.grey,
             ),
-          ),
-        ],
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.blue : Colors.grey,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildAddButton() {
-    return GestureDetector(
+    return InkWell(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const PostPage()),
-        );
+        Navigator.pushNamed(context, '/post');
       },
       child: Container(
-        width: 44,
-        height: 44,
+        height: 40,
+        width: 40,
         decoration: BoxDecoration(
-          color: Colors.lightGreen,
           shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: [Colors.cyanAccent, Colors.green[400]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.lightGreen.withOpacity(0.3),
-              spreadRadius: 2,
-              blurRadius: 5,
+              color: Colors.green,
+              spreadRadius: 1,
+              blurRadius: 6,
             ),
           ],
         ),
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+          size: 30,
+        ),
       ),
     );
   }
